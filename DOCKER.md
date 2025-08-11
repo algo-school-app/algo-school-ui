@@ -314,6 +314,7 @@ docker-compose -f docker-compose.prod.yml logs -f
 docker-compose -f docker-compose.prod.yml build
 docker-compose -f docker-compose.prod.yml run --rm algo-school-ui npm test
 
+
 # Deploy
 docker-compose -f docker-compose.prod.yml up -d
 ```
