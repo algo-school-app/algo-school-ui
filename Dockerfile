@@ -33,7 +33,6 @@ COPY --from=builder /app/dist ./dist
 
 # Copy necessary files for serving
 COPY --from=builder /app/vite.config.js ./
-COPY --from=builder /app/env.example ./
 
 # Expose port
 EXPOSE 4173
