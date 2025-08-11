@@ -19,7 +19,7 @@
           <div class="flex items-center space-x-1 sm:space-x-2 md:space-x-3 flex-shrink-0">
             <!-- Seasonal Theme Selector - Hidden on mobile -->
             <div class="hidden sm:block">
-              <SeasonalThemeSelector />
+              <SeasonalThemeSelector :show-controls="true" />
             </div>
             
             <!-- Tenant/Campus Selector -->

@@ -237,16 +237,17 @@
 
       <!-- Input Container -->
       <div class="flex gap-2 sm:gap-3 items-end">
-        <!-- File Upload Button -->
+        <!-- File Upload Button - Hidden as requested -->
+        <!-- 
         <button 
           @click="triggerFileUpload"
           :disabled="isLoading"
           class="flex-shrink-0 w-11 h-11 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-800/50 dark:to-pink-800/50 hover:from-purple-200 hover:to-pink-200 dark:hover:from-purple-700/60 dark:hover:to-pink-700/60 border border-purple-200 dark:border-purple-600 rounded-xl flex items-center justify-center text-purple-600 dark:text-purple-300 hover:text-purple-700 dark:hover:text-purple-200 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
           title="Upload file"
         >
-          <!-- Use emoji as reliable cross-platform icon -->
           <span class="text-lg">📎</span>
         </button>
+        -->
 
         <!-- Message Input -->
         <div class="flex-1 relative">

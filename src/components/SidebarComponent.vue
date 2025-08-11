@@ -171,8 +171,14 @@ const getUserClasses = () => {
 const mainMenuItems = computed(() => {
   const userClasses = getUserClasses()
   
-  const items = [
-    { id: 'AI', label: 'AI Chat', icon: 'robot' },
+  const items = []
+  
+  // Only add AI Assistant if user has agents_* permissions
+  if (hasAgentsPermission()) {
+    items.push({ id: 'AI', label: 'AI Assistant', icon: 'robot' })
+  }
+  
+  items.push(
     { 
       id: 'AcademicSetup', 
       label: 'Academic Setup', 
@@ -195,7 +201,7 @@ const mainMenuItems = computed(() => {
         { id: 'Staff', label: 'Staff', icon: 'staff' }
       ]
     }
-  ]
+  )
   
   // Only add My Classes if user has classes
   if (userClasses.length > 0) {
@@ -225,11 +231,30 @@ const hasSupeAdminPermission = () => {
   return false
 }
 
+// Check if user has any agents_* permissions
+const hasAgentsPermission = () => {
+  try {
+    const profile = UserService.getStoredProfile()
+    if (profile && profile.permissions && Array.isArray(profile.permissions)) {
+      return profile.permissions.some(permission => 
+        permission.name.startsWith('agents_') && permission.is_active
+      )
+    }
+  } catch (error) {
+    console.error('Error checking agents permission:', error)
+  }
+  return false
+}
+
 const bottomMenuItems = computed(() => {
   const items = [
-    { id: 'Profile', label: 'Profile', icon: 'user' },
-    { id: 'RolePermissions', label: 'Security', icon: 'shield' }
+    { id: 'Profile', label: 'Profile', icon: 'user' }
   ]
+  
+  // Only add Security if user has super_admin permission
+  if (hasSupeAdminPermission()) {
+    items.push({ id: 'RolePermissions', label: 'Security', icon: 'shield' })
+  }
   
   // Add AI Settings if user has super_admin permission
   if (hasSupeAdminPermission()) {

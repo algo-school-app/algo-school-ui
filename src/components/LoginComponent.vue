@@ -133,7 +133,7 @@
               <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
             </svg>
-            <span>Sign in with Google</span>
+            <span>Sign in with MCGP</span>
           </button>
 
           <!-- Friendly Error Message -->
@@ -463,6 +463,8 @@ const handleSubmit = async () => {
     
     // Step 5: Redirect to dashboard after confetti celebration
     setTimeout(async () => {
+      // Restore theme before navigation
+      restoreOriginalTheme()
       await $router.push('/dashboard')
     }, 2500) // Give time for confetti to be enjoyed!
   } catch (err) {
@@ -537,11 +539,19 @@ const informAdmin = () => {
   closeTenantAccessDialog()
 }
 
+// Store original theme state to restore later
+const originalThemeState = ref(null)
+
 // Lifecycle hooks
 onMounted(async () => {
   console.log('LoginComponent mounted, checking for OAuth callback...')
   console.log('Current URL:', window.location.href)
   console.log('Hash:', window.location.hash)
+  
+  // Force day theme on login page - store original state first
+  originalThemeState.value = document.documentElement.classList.contains('dark')
+  document.documentElement.classList.remove('dark')
+  console.log('LoginComponent: Forced day theme for login page')
   
   // Check for OAuth errors first
   const urlParams = new URLSearchParams(window.location.search)
@@ -644,6 +654,8 @@ onMounted(async () => {
         // Navigate to dashboard after confetti celebration
         console.log('Redirecting to dashboard...')
         setTimeout(() => {
+          // Restore theme before navigation
+          restoreOriginalTheme()
           $router.push('/dashboard').catch(err => {
             console.error('OAuth navigation error:', err)
             // Fallback to root if dashboard fails
@@ -683,8 +695,24 @@ onMounted(async () => {
   startFloatingAnimation()
 })
 
+// Function to restore original theme state
+const restoreOriginalTheme = () => {
+  if (originalThemeState.value !== null) {
+    if (originalThemeState.value) {
+      document.documentElement.classList.add('dark')
+      console.log('LoginComponent: Restored dark theme')
+    } else {
+      document.documentElement.classList.remove('dark')
+      console.log('LoginComponent: Maintained light theme')
+    }
+    originalThemeState.value = null
+  }
+}
+
 onUnmounted(() => {
   stopFloatingAnimation()
+  // Restore the original theme when component is destroyed
+  restoreOriginalTheme()
 })
 </script>
 

@@ -1,10 +1,10 @@
 <template>
-  <div class="seasonal-theme-selector">
+  <!-- Only show if seasonal themes are enabled or in settings mode -->
+  <div v-if="seasonalThemesEnabled || showControls" class="seasonal-theme-selector">
     <!-- Theme Selector Button -->
     <Menu as="div" class="relative">
       <MenuButton 
-        class="flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200 theme-selector-button"
-        :style="buttonStyle"
+        class="flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200 theme-selector-button text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700"
       >
         <div class="flex items-center gap-2">
           <span class="text-lg">{{ currentTheme.decorations[0] }}</span>
@@ -28,61 +28,89 @@
               Choose Your Season
             </h3>
             
-            <!-- Auto Theme Option -->
-            <MenuItem v-slot="{ active }">
-              <button
-                @click="setAutoTheme"
-                :class="[
-                  'w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 mb-2',
-                  isAutoTheme ? 'bg-blue-50 dark:bg-blue-900/20 ring-2 ring-blue-500' : 'hover:bg-gray-50 dark:hover:bg-gray-700'
-                ]"
-              >
-                <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
-                  <span class="text-white text-lg">🤖</span>
+            <!-- Seasonal Themes Toggle -->
+            <div class="mb-4 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
+              <div class="flex items-center justify-between">
+                <div>
+                  <div class="text-sm font-medium text-gray-900 dark:text-white">Seasonal Themes</div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">Enable seasonal decorations and animations</div>
                 </div>
-                <div class="flex-1 text-left">
-                  <div class="font-medium text-gray-900 dark:text-white">Auto Season</div>
-                  <div class="text-sm text-gray-500 dark:text-gray-400">Changes automatically</div>
-                </div>
-                <div v-if="isAutoTheme" class="text-blue-500">
-                  <i class="fas fa-check"></i>
-                </div>
-              </button>
-            </MenuItem>
-            
-            <!-- Theme Options Grid -->
-            <div class="grid grid-cols-2 gap-2">
-              <MenuItem v-for="theme in availableThemes" :key="theme.key" v-slot="{ active }">
                 <button
-                  @click="selectTheme(theme.key)"
+                  @click="toggleSeasonalThemes"
                   :class="[
-                    'flex flex-col items-center gap-2 p-3 rounded-lg transition-all duration-200 theme-card',
-                    selectedThemeKey === theme.key ? 'ring-2 ring-blue-500' : 'hover:shadow-md'
+                    'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800',
+                    seasonalThemesEnabled ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-600'
                   ]"
-                  :style="getThemeCardStyle(theme)"
                 >
-                  <div class="text-2xl">{{ theme.decorations[0] }}</div>
-                  <div class="text-xs font-medium text-center">{{ theme.name }}</div>
-                  <div class="flex gap-1">
-                    <span v-for="decoration in theme.decorations.slice(1, 4)" :key="decoration" class="text-xs">
-                      {{ decoration }}
-                    </span>
+                  <span class="sr-only">Enable seasonal themes</span>
+                  <span
+                    :class="[
+                      'inline-block h-4 w-4 transform rounded-full bg-white transition-transform',
+                      seasonalThemesEnabled ? 'translate-x-6' : 'translate-x-1'
+                    ]"
+                  />
+                </button>
+              </div>
+            </div>
+            
+            <!-- Theme Selection (only visible when seasonal themes are enabled) -->
+            <div v-if="seasonalThemesEnabled">
+            
+              <!-- Auto Theme Option -->
+              <MenuItem v-slot="{ active }">
+                <button
+                  @click="setAutoTheme"
+                  :class="[
+                    'w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 mb-2',
+                    isAutoTheme ? 'bg-blue-50 dark:bg-blue-900/20 ring-2 ring-blue-500 text-gray-900 dark:text-white' : 'hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
+                  ]"
+                >
+                  <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
+                    <span class="text-white text-lg">🤖</span>
+                  </div>
+                  <div class="flex-1 text-left">
+                    <div class="font-medium">Auto Season</div>
+                    <div class="text-sm opacity-75">Changes automatically</div>
+                  </div>
+                  <div v-if="isAutoTheme" class="text-blue-500">
+                    <i class="fas fa-check"></i>
                   </div>
                 </button>
               </MenuItem>
-            </div>
             
-            <!-- Preview Section -->
-            <div v-if="previewTheme" class="mt-4 p-3 rounded-lg border border-gray-200 dark:border-gray-700" :style="getPreviewStyle()">
-              <div class="text-center">
-                <div class="text-lg mb-2">{{ previewTheme.name }} Preview</div>
-                <div class="flex justify-center gap-2 mb-2">
-                  <span v-for="decoration in previewTheme.decorations" :key="decoration" class="text-lg">
-                    {{ decoration }}
-                  </span>
-                </div>
-                <div class="text-sm opacity-75">
-                  Experience the magic of {{ previewTheme.name.toLowerCase() }} throughout your dashboard
+              <!-- Theme Options Grid -->
+              <div class="grid grid-cols-2 gap-2">
+                <MenuItem v-for="theme in availableThemes" :key="theme.key" v-slot="{ active }">
+                  <button
+                    @click="selectTheme(theme.key)"
+                    :class="[
+                      'flex flex-col items-center gap-2 p-3 rounded-lg transition-all duration-200 theme-card bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white',
+                      selectedThemeKey === theme.key ? 'ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'hover:shadow-md'
+                    ]"
+                  >
+                    <div class="text-2xl">{{ theme.decorations[0] }}</div>
+                    <div class="text-xs font-medium text-center">{{ theme.name }}</div>
+                    <div class="flex gap-1">
+                      <span v-for="decoration in theme.decorations.slice(1, 4)" :key="decoration" class="text-xs">
+                        {{ decoration }}
+                      </span>
+                    </div>
+                  </button>
+                </MenuItem>
+              </div>
+            
+              <!-- Preview Section -->
+              <div v-if="previewTheme" class="mt-4 p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+                <div class="text-center">
+                  <div class="text-lg mb-2 text-gray-900 dark:text-white">{{ previewTheme.name }} Preview</div>
+                  <div class="flex justify-center gap-2 mb-2">
+                    <span v-for="decoration in previewTheme.decorations" :key="decoration" class="text-lg">
+                      {{ decoration }}
+                    </span>
+                  </div>
+                  <div class="text-sm opacity-75 text-gray-700 dark:text-gray-300">
+                    Experience the magic of {{ previewTheme.name.toLowerCase() }} throughout your dashboard
+                  </div>
                 </div>
               </div>
             </div>
@@ -91,8 +119,8 @@
       </transition>
     </Menu>
     
-    <!-- Seasonal Decorations Overlay -->
-    <div v-if="showDecorations" class="seasonal-decorations" :class="decorationClass">
+    <!-- Seasonal Decorations Overlay (only show if seasonal themes are enabled) -->
+    <div v-if="seasonalThemesEnabled && showDecorations" class="seasonal-decorations" :class="decorationClass">
       <div 
         v-for="(decoration, index) in floatingDecorations" 
         :key="index"
@@ -115,8 +143,18 @@ import {
   saveThemePreference, 
   getThemePreference, 
   clearThemeOverride,
-  generateThemeCSS
+  generateThemeCSS,
+  saveSeasonalThemesEnabled,
+  getSeasonalThemesEnabled
 } from '../utils/seasonalThemes.js'
+
+// Props to control visibility from parent components
+const props = defineProps({
+  showControls: {
+    type: Boolean,
+    default: false
+  }
+})
 
 // Reactive state
 const selectedThemeKey = ref(null)
@@ -124,6 +162,7 @@ const isAutoTheme = ref(true)
 const showDecorations = ref(true)
 const previewTheme = ref(null)
 const floatingDecorations = ref([])
+const seasonalThemesEnabled = ref(false) // Default to disabled
 
 // Computed properties
 const availableThemes = computed(() => getAllThemes())
@@ -134,14 +173,7 @@ const currentTheme = computed(() => {
   return getThemeByKey(selectedThemeKey.value) || getCurrentTheme()
 })
 
-const buttonStyle = computed(() => {
-  const theme = currentTheme.value
-  return {
-    backgroundColor: theme.colors.surface,
-    color: theme.colors.text,
-    borderColor: theme.colors.primary + '40'
-  }
-})
+// Remove the buttonStyle computed property since we're using Tailwind classes
 
 const decorationClass = computed(() => {
   return `decoration-${currentTheme.value.particles.type}`
@@ -180,24 +212,37 @@ const applyTheme = () => {
   }))
 }
 
-const getThemeCardStyle = (theme) => {
-  return {
-    backgroundColor: theme.colors.surface,
-    color: theme.colors.text,
-    border: `1px solid ${theme.colors.primary}40`
-  }
-}
+// Remove the getThemeCardStyle method since we're using Tailwind classes
 
-const getPreviewStyle = () => {
-  if (!previewTheme.value) return {}
-  return {
-    backgroundColor: previewTheme.value.colors.background,
-    color: previewTheme.value.colors.text,
-    borderColor: previewTheme.value.colors.primary
+// Remove the getPreviewStyle method since we're using Tailwind classes
+
+const toggleSeasonalThemes = () => {
+  seasonalThemesEnabled.value = !seasonalThemesEnabled.value
+  saveSeasonalThemesEnabled(seasonalThemesEnabled.value)
+  
+  if (!seasonalThemesEnabled.value) {
+    // If disabling, clear any overrides and reset to auto theme
+    clearThemeOverride()
+    isAutoTheme.value = true
+    selectedThemeKey.value = null
+    showDecorations.value = false
+    floatingDecorations.value = []
+  } else {
+    // If enabling, restore decorations
+    showDecorations.value = true
+    generateFloatingDecorations()
   }
+  
+  applyTheme()
 }
 
 const generateFloatingDecorations = () => {
+  // Only generate decorations if seasonal themes are enabled
+  if (!seasonalThemesEnabled.value) {
+    floatingDecorations.value = []
+    return
+  }
+  
   const theme = currentTheme.value
   floatingDecorations.value = []
   
@@ -224,18 +269,32 @@ const generateFloatingDecorations = () => {
 
 // Lifecycle
 onMounted(() => {
-  // Load saved preference
-  const savedTheme = getThemePreference()
-  if (savedTheme && localStorage.getItem('algo_theme_override') === 'true') {
-    selectedThemeKey.value = savedTheme
-    isAutoTheme.value = false
+  // Load seasonal themes enabled preference (default to false)
+  seasonalThemesEnabled.value = getSeasonalThemesEnabled()
+  
+  // Only load theme preferences if seasonal themes are enabled
+  if (seasonalThemesEnabled.value) {
+    const savedTheme = getThemePreference()
+    if (savedTheme && localStorage.getItem('algo_theme_override') === 'true') {
+      selectedThemeKey.value = savedTheme
+      isAutoTheme.value = false
+    }
+    
+    generateFloatingDecorations()
+    
+    // Regenerate decorations periodically
+    setInterval(() => {
+      if (seasonalThemesEnabled.value) {
+        generateFloatingDecorations()
+      }
+    }, 30000) // Every 30 seconds
+  } else {
+    // If seasonal themes are disabled, ensure no decorations
+    showDecorations.value = false
+    floatingDecorations.value = []
   }
   
   applyTheme()
-  generateFloatingDecorations()
-  
-  // Regenerate decorations periodically
-  setInterval(generateFloatingDecorations, 30000) // Every 30 seconds
 })
 
 // Watch for theme changes
@@ -247,7 +306,8 @@ watch(() => currentTheme.value, () => {
 defineExpose({
   currentTheme,
   applyTheme,
-  generateFloatingDecorations
+  generateFloatingDecorations,
+  seasonalThemesEnabled
 })
 </script>
 

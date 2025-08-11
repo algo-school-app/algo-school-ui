@@ -260,6 +260,16 @@ export function saveThemePreference(seasonKey) {
   localStorage.setItem('algo_theme_override', 'true')
 }
 
+export function saveSeasonalThemesEnabled(enabled) {
+  localStorage.setItem('algo_seasonal_themes_enabled', enabled.toString())
+}
+
+export function getSeasonalThemesEnabled() {
+  const saved = localStorage.getItem('algo_seasonal_themes_enabled')
+  // Default to false (disabled) if not set
+  return saved === 'true'
+}
+
 export function getThemePreference() {
   const override = localStorage.getItem('algo_theme_override') === 'true'
   const saved = localStorage.getItem('algo_seasonal_theme')
