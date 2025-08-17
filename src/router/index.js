@@ -3,6 +3,7 @@ import LoginView from '../views/LoginView.vue'
 import DashboardView from '../views/DashboardView.vue'
 import FamilyDetailsComponent from '../components/FamilyDetailsComponent.vue'
 import ClassComponent from '../components/ClassComponent.vue'
+import DocumentViewer from '../components/DocumentViewer.vue'
 
 const routes = [
   {
@@ -27,6 +28,12 @@ const routes = [
     path: '/dashboard/:menu*',
     name: 'Dashboard',
     component: DashboardView
+  },
+  {
+    path: '/documents/:id',
+    name: 'document-viewer',
+    component: DocumentViewer,
+    meta: { requiresAuth: true }
   }
 ]
 
@@ -41,8 +48,12 @@ router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('algo_token')
   const isAuthenticated = user && token
   
-  if (to.path.startsWith('/dashboard') && !isAuthenticated) {
-    // Redirect to login if trying to access dashboard without authentication
+  // Check if route requires authentication
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth) || 
+                      to.path.startsWith('/dashboard')
+  
+  if (requiresAuth && !isAuthenticated) {
+    // Redirect to login if trying to access protected route without authentication
     next('/login')
   } else if (to.path === '/login' && isAuthenticated) {
     // Redirect to dashboard if already authenticated

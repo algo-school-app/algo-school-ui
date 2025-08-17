@@ -274,7 +274,7 @@
                 <div v-if="!uploadForm.file" @click="$refs.fileInput.click()" class="cursor-pointer">
                   <HandDrawnIcon name="upload" size="xl" class="text-gray-400 mb-2" />
                   <p class="text-sm text-gray-600 dark:text-gray-400">Click to select file</p>
-                  <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">PDF, TXT, DOC (max 10MB)</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">PDF, TXT, DOC (max 50MB)</p>
                 </div>
                 <div v-else class="flex items-center justify-between">
                   <div class="flex items-center gap-2">
@@ -478,10 +478,10 @@ const handleFileSelect = (event) => {
       return
     }
     
-    // Check file size (10MB limit)
-    if (file.size > 10 * 1024 * 1024) {
+    // Check file size (50MB limit - Supabase default)
+    if (file.size > 50 * 1024 * 1024) {
       if (window.toast) {
-        window.toast.error('File Too Large', 'File size must be less than 10MB')
+        window.toast.error('File Too Large', 'File size must be less than 50MB')
       }
       return
     }

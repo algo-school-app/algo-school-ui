@@ -659,7 +659,31 @@ const formatMessageContent = (content) => {
     return content
   } else {
     // Plain text content - preserve line breaks and whitespace
-    return content.replace(/\n/g, '<br>').replace(/\s\s+/g, match => '&nbsp;'.repeat(match.length))
+    let formatted = content.replace(/\n/g, '<br>').replace(/\s\s+/g, match => '&nbsp;'.repeat(match.length))
+    
+    // Parse and convert citation URLs to clickable links
+    // Look for patterns like: /documents/{uuid}#section=...
+    const citationPattern = /\/documents\/([a-f0-9-]+)(#[^\s]+)?/g
+    formatted = formatted.replace(citationPattern, (match, docId, hash) => {
+      const fullUrl = `/documents/${docId}${hash || ''}`
+      return `<a href="${fullUrl}" class="citation-link text-blue-600 hover:text-blue-800 underline" target="_blank">📄 View Document</a>`
+    })
+    
+    // Also look for citation patterns in structured responses
+    // Pattern: [Citation: Document Name > Chapter > Section]
+    const structuredCitationPattern = /\[Citation: ([^\]]+)\]/g
+    formatted = formatted.replace(structuredCitationPattern, (match, citation) => {
+      return `<span class="citation-badge inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-md">📚 ${citation}</span>`
+    })
+    
+    // Look for search result blocks with citations
+    // Pattern: Result N: ... Citation URL: /documents/...
+    const resultCitationPattern = /Citation URL: (\/documents\/[^\s]+)/g
+    formatted = formatted.replace(resultCitationPattern, (match, url) => {
+      return `Citation: <a href="${url}" class="citation-link text-blue-600 hover:text-blue-800 underline" target="_blank">📄 Open in Viewer</a>`
+    })
+    
+    return formatted
   }
 }
 
