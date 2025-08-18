@@ -81,26 +81,57 @@
           <p class="mt-2">Loading document...</p>
         </div>
         
-        <div v-else-if="error" class="text-center py-8 text-red-600">
-          <p>Error: {{ error }}</p>
+        <div v-else-if="error" class="text-center py-8">
+          <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-8">
+            <div class="text-center">
+              <div class="text-6xl mb-4">📄</div>
+              <h2 class="text-2xl font-bold text-gray-800 mb-4">Document Viewer</h2>
+              <p class="text-gray-600 mb-4">Document ID: <code class="bg-gray-100 px-2 py-1 rounded">{{ documentId }}</code></p>
+              
+              <div v-if="error.includes('401') || error.includes('authentication')" class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                <p class="text-yellow-800">Authentication required to view this document.</p>
+                <p class="text-sm text-yellow-600 mt-2">Please ensure you are logged in to access document content.</p>
+              </div>
+              <div v-else class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                <p class="text-blue-800">Document preview is currently unavailable.</p>
+                <p class="text-sm text-blue-600 mt-2">The document content will be displayed here once the backend service is configured.</p>
+              </div>
+              
+              <div v-if="hashParams" class="bg-gray-50 rounded-lg p-4 text-left">
+                <h3 class="font-semibold text-gray-700 mb-2">Navigation Parameters:</h3>
+                <ul class="text-sm text-gray-600 space-y-1">
+                  <li v-for="[key, value] in hashParams" :key="key">
+                    <span class="font-medium">{{ key }}:</span> {{ value }}
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
         </div>
         
         <!-- PDF.js canvas or iframe for PDF display -->
         <div v-else class="pdf-viewer bg-white shadow-lg mx-auto" style="max-width: 850px;">
-          <!-- Option 1: Using iframe (simpler) -->
-          <iframe 
-            v-if="pdfUrl"
-            :src="pdfViewerUrl"
-            class="w-full"
-            style="height: 800px; border: none;"
-          ></iframe>
+          <!-- Display PDF content -->
+          <div v-if="pdfBlobUrl" class="pdf-display">
+            <iframe 
+              :src="pdfDisplayUrl"
+              class="w-full"
+              style="height: 800px; border: none;"
+              @load="onPdfLoad"
+            ></iframe>
+          </div>
+          <div v-else-if="!loading" class="text-center py-8 text-gray-500">
+            <p>PDF viewer will be displayed here</p>
+            <p class="text-sm mt-2">Document: {{ document?.title || 'Loading...' }}</p>
+          </div>
           
-          <!-- Option 2: Using canvas with PDF.js (more control) -->
-          <canvas 
-            v-else
-            ref="pdfCanvas"
-            class="w-full"
-          ></canvas>
+          <!-- Note about limitations -->
+          <div v-if="pdfBlobUrl && highlightedChunk" class="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-sm">
+            <p class="text-yellow-800">
+              Note: Text highlighting is not available in the basic PDF viewer. 
+              The citation refers to content in this document.
+            </p>
+          </div>
         </div>
 
         <!-- Search results overlay -->
@@ -129,9 +160,10 @@
 </template>
 
 <script>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { configService } from '@/services/configService'
+import { supabase } from '@/services/supabase'
 
 export default {
   name: 'DocumentViewer',
@@ -149,6 +181,7 @@ export default {
     const searchQuery = ref('')
     const searchResults = ref([])
     const pdfUrl = ref('')
+    const pdfBlobUrl = ref('')
     const highlightedChunk = ref(null)
     
     // Canvas ref for PDF.js
@@ -157,6 +190,18 @@ export default {
     // Computed
     const documentId = computed(() => route.params.id)
     const documentTitle = computed(() => document.value?.title || 'Document')
+    
+    // Build the PDF display URL with page number
+    const pdfDisplayUrl = computed(() => {
+      if (!pdfBlobUrl.value) return ''
+      // Add page anchor for browsers that support it
+      return `${pdfBlobUrl.value}#page=${currentPage.value}`
+    })
+    const hashParams = computed(() => {
+      if (!route.hash) return null
+      const params = new URLSearchParams(route.hash.substring(1))
+      return Array.from(params.entries()).length > 0 ? params : null
+    })
     
     // Build PDF viewer URL with navigation parameters
     const pdfViewerUrl = computed(() => {
@@ -167,11 +212,49 @@ export default {
       const params = new URLSearchParams(hash)
       const page = params.get('page') || currentPage.value
       
-      // Using PDF.js viewer
-      return `/pdfjs/web/viewer.html?file=${encodeURIComponent(pdfUrl.value)}#page=${page}`
+      // Build the actual PDF URL with auth token
+      const baseUrl = pdfUrl.value.startsWith('http') 
+        ? pdfUrl.value 
+        : `${configService.getServerUrl()}${pdfUrl.value}`
+      
+      // Add page navigation (works in most modern browsers)
+      return `${baseUrl}#page=${page}`
     })
     
     // Methods
+    const loadPDF = async (pdfPath) => {
+      try {
+        const pdfEndpoint = pdfPath.startsWith('http') 
+          ? pdfPath 
+          : `${configService.getServerUrl()}${pdfPath}`
+        
+        const response = await fetch(pdfEndpoint, {
+          headers: {
+            'Authorization': `Bearer ${await getAuthToken()}`,
+            'X-Tenant-Domain': window.location.hostname
+          }
+        })
+        
+        if (!response.ok) {
+          console.error('Failed to load PDF:', response.statusText)
+          return
+        }
+        
+        // Create blob URL from the PDF response
+        const blob = await response.blob()
+        
+        // Revoke old blob URL if exists
+        if (pdfBlobUrl.value) {
+          URL.revokeObjectURL(pdfBlobUrl.value)
+        }
+        
+        // Create new blob URL
+        pdfBlobUrl.value = URL.createObjectURL(blob)
+      } catch (err) {
+        console.error('Error loading PDF:', err)
+      }
+    }
+    
     const loadDocument = async () => {
       try {
         loading.value = true
@@ -201,7 +284,13 @@ export default {
         })
         
         if (!response.ok) {
-          throw new Error(`Failed to load document: ${response.statusText}`)
+          if (response.status === 401) {
+            throw new Error('401: Authentication required')
+          } else if (response.status === 404) {
+            throw new Error('404: Document not found')
+          } else {
+            throw new Error(`Failed to load document: ${response.statusText}`)
+          }
         }
         
         const data = await response.json()
@@ -209,6 +298,11 @@ export default {
         toc.value = data.toc || []
         totalPages.value = data.document?.page_count || 0
         pdfUrl.value = data.pdf_url
+        
+        // Fetch the PDF with authentication
+        if (data.pdf_url) {
+          await loadPDF(data.pdf_url)
+        }
         
         // Handle navigation from URL
         if (data.navigation) {
@@ -253,8 +347,7 @@ export default {
       
       // Update route with new hash
       router.push({
-        name: 'document-viewer',
-        params: { id: documentId.value },
+        path: route.path,
         hash: `#${params.toString()}`
       })
       
@@ -268,6 +361,8 @@ export default {
       // This would integrate with PDF.js to highlight specific text
       // For now, just store the highlighted chunk
       highlightedChunk.value = chunkId
+      // Note: Text highlighting requires PDF.js implementation
+      console.log('Text highlighting requires PDF.js implementation. Chunk ID:', chunkId)
       
       // If using PDF.js, you would:
       // 1. Find the text in the PDF
@@ -336,11 +431,14 @@ export default {
         params.set('highlight', highlightedChunk.value)
       }
       
-      router.replace({
-        name: 'document-viewer',
-        params: { id: documentId.value },
-        hash: `#${params.toString()}`
-      })
+      // Only update hash, keep the same route
+      const newHash = `#${params.toString()}`
+      if (route.hash !== newHash) {
+        router.replace({
+          path: route.path,
+          hash: newHash
+        })
+      }
     }
     
     const goBack = () => {
@@ -348,8 +446,14 @@ export default {
     }
     
     const getAuthToken = async () => {
-      // Get token from localStorage (should be set after login)
-      return localStorage.getItem('algo_token') || ''
+      // Get token from Supabase session
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        return session?.access_token || ''
+      } catch (error) {
+        console.error('Error getting auth token:', error)
+        return ''
+      }
     }
     
     const getTocItemClass = (item) => {
@@ -365,6 +469,13 @@ export default {
       return text.substring(0, maxLength) + '...'
     }
     
+    const onPdfLoad = () => {
+      // PDF has loaded in iframe
+      console.log('PDF loaded, current page:', currentPage.value)
+      // Note: Page navigation and highlighting in blob URLs is limited
+      // Full functionality requires PDF.js implementation
+    }
+    
     // Watch for route changes
     watch(() => route.hash, () => {
       if (route.name === 'document-viewer') {
@@ -377,6 +488,13 @@ export default {
       loadDocument()
     })
     
+    // Clean up blob URL on unmount
+    onUnmounted(() => {
+      if (pdfBlobUrl.value) {
+        URL.revokeObjectURL(pdfBlobUrl.value)
+      }
+    })
+    
     return {
       loading,
       error,
@@ -387,10 +505,13 @@ export default {
       searchQuery,
       searchResults,
       pdfUrl,
+      pdfBlobUrl,
+      pdfDisplayUrl,
       pdfCanvas,
       documentTitle,
       pdfViewerUrl,
       highlightedChunk,
+      hashParams,
       loadDocument,
       navigateToSection,
       navigateToResult,
@@ -399,7 +520,8 @@ export default {
       nextPage,
       goBack,
       getTocItemClass,
-      truncateText
+      truncateText,
+      onPdfLoad
     }
   }
 }

@@ -173,8 +173,8 @@ const mainMenuItems = computed(() => {
   
   const items = []
   
-  // Only add AI Assistant if user has agents_* permissions
-  if (hasAgentsPermission()) {
+  // Only add AI Assistant if user has agents_* permissions or super_admin permission
+  if (hasAgentsPermission() || hasSuperAdminPermission()) {
     items.push({ id: 'AI', label: 'AI Assistant', icon: 'robot' })
   }
   
@@ -217,7 +217,7 @@ const mainMenuItems = computed(() => {
 })
 
 // Check if user has super_admin permission
-const hasSupeAdminPermission = () => {
+const hasSuperAdminPermission = () => {
   try {
     const profile = UserService.getStoredProfile()
     if (profile && profile.permissions && Array.isArray(profile.permissions)) {
@@ -252,12 +252,12 @@ const bottomMenuItems = computed(() => {
   ]
   
   // Only add Security if user has super_admin permission
-  if (hasSupeAdminPermission()) {
+  if (hasSuperAdminPermission()) {
     items.push({ id: 'RolePermissions', label: 'Security', icon: 'shield' })
   }
   
   // Add AI Settings if user has super_admin permission
-  if (hasSupeAdminPermission()) {
+  if (hasSuperAdminPermission()) {
     items.push({ id: 'AISettings', label: 'AI Settings', icon: 'robot' })
   }
   

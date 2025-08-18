@@ -305,10 +305,13 @@
 </template>
 
 <script setup>
-import { ref, nextTick, onMounted, watch } from 'vue'
+import { ref, nextTick, onMounted, onUnmounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import HandDrawnIcon from './HandDrawnIcon.vue'
 import { agentAPIService } from '../services/agentAPIService.js'
 import { UserService } from '../services/userService.js'
+
+const router = useRouter()
 
 const messages = ref([])
 const currentMessage = ref('')
@@ -666,7 +669,8 @@ const formatMessageContent = (content) => {
     const citationPattern = /\/documents\/([a-f0-9-]+)(#[^\s]+)?/g
     formatted = formatted.replace(citationPattern, (match, docId, hash) => {
       const fullUrl = `/documents/${docId}${hash || ''}`
-      return `<a href="${fullUrl}" class="citation-link text-blue-600 hover:text-blue-800 underline" target="_blank">📄 View Document</a>`
+      // Use data attributes to store the URL for Vue Router navigation
+      return `<a href="${fullUrl}" class="citation-link text-blue-600 hover:text-blue-800 underline" data-doc-id="${docId}" data-doc-hash="${hash || ''}">📄 View Document</a>`
     })
     
     // Also look for citation patterns in structured responses
@@ -680,7 +684,13 @@ const formatMessageContent = (content) => {
     // Pattern: Result N: ... Citation URL: /documents/...
     const resultCitationPattern = /Citation URL: (\/documents\/[^\s]+)/g
     formatted = formatted.replace(resultCitationPattern, (match, url) => {
-      return `Citation: <a href="${url}" class="citation-link text-blue-600 hover:text-blue-800 underline" target="_blank">📄 Open in Viewer</a>`
+      // Extract document ID and hash from URL
+      const urlMatch = url.match(/\/documents\/([a-f0-9-]+)(#[^\s]+)?/)
+      if (urlMatch) {
+        const [, docId, hash] = urlMatch
+        return `Citation: <a href="${url}" class="citation-link text-blue-600 hover:text-blue-800 underline" data-doc-id="${docId}" data-doc-hash="${hash || ''}">📄 Open in Viewer</a>`
+      }
+      return match // Return original if pattern doesn't match
     })
     
     return formatted
@@ -706,12 +716,45 @@ watch(() => messages.value.length, (newLength, oldLength) => {
   }
 }, { flush: 'post' })
 
+// Handle citation link clicks
+const handleCitationClick = (event) => {
+  // Check if the clicked element is a citation link
+  const link = event.target.closest('.citation-link')
+  if (link) {
+    event.preventDefault() // Prevent default navigation
+    
+    const docId = link.getAttribute('data-doc-id')
+    const docHash = link.getAttribute('data-doc-hash') || ''
+    
+    if (docId) {
+      // Navigate using Vue Router
+      router.push({
+        name: 'document-viewer',
+        params: { id: docId },
+        hash: docHash
+      })
+    }
+  }
+}
+
 onMounted(() => {
   // Load user classes on component mount
   loadUserClasses()
   
   if (messageInput.value) {
     messageInput.value.addEventListener('input', autoResize)
+  }
+  
+  // Add event delegation for citation links
+  if (chatContainer.value) {
+    chatContainer.value.addEventListener('click', handleCitationClick)
+  }
+})
+
+// Clean up event listeners on unmount
+onUnmounted(() => {
+  if (chatContainer.value) {
+    chatContainer.value.removeEventListener('click', handleCitationClick)
   }
 })
 </script>
