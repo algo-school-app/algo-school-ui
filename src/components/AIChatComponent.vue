@@ -142,8 +142,49 @@
                   ? 'text-white' 
                   : 'text-gray-800 dark:text-gray-200'
               ]"
-              v-html="formatMessageContent(message.content)"
-            ></div>
+            >
+              <!-- Main message content -->
+              <div v-html="formatMessageWithCitations(message).mainContent"></div>
+              
+              <!-- Citations Section (only for AI messages with citations) -->
+              <div 
+                v-if="message.role === 'ai' && formatMessageWithCitations(message).citations.length > 0" 
+                class="mt-4 pt-3 border-t citation-section"
+                :class="[
+                  message.role === 'user' 
+                    ? 'border-purple-400/30' 
+                    : 'border-gray-200 dark:border-gray-600'
+                ]"
+              >
+                <div class="text-xs font-semibold mb-2 opacity-70">
+                  📚 Sources
+                </div>
+                <div class="space-y-2">
+                  <a
+                    v-for="(citation, idx) in formatMessageWithCitations(message).citations"
+                    :key="idx"
+                    :href="citation.url"
+                    @click.prevent="openCitation(citation)"
+                    class="block p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all duration-200 cursor-pointer group citation-card"
+                  >
+                    <div class="flex items-start gap-2">
+                      <span class="text-blue-500 dark:text-blue-400 mt-0.5">📄</span>
+                      <div class="flex-1 min-w-0">
+                        <div class="text-sm text-blue-700 dark:text-blue-300 font-medium truncate group-hover:underline">
+                          {{ citation.text }}
+                        </div>
+                        <div v-if="citation.page" class="text-xs text-blue-600 dark:text-blue-400 opacity-70 mt-0.5">
+                          Page {{ citation.page }}
+                        </div>
+                      </div>
+                      <span class="text-xs text-blue-500 dark:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                        ↗
+                      </span>
+                    </div>
+                  </a>
+                </div>
+              </div>
+            </div>
             
             <!-- Message Tail (Speech Bubble Effect) -->
             <div 
@@ -236,7 +277,7 @@
       </div>
 
       <!-- Input Container -->
-      <div class="flex gap-2 sm:gap-3 items-end">
+      <div class="flex gap-2 sm:gap-3 items-center">
         <!-- File Upload Button - Hidden as requested -->
         <!-- 
         <button 
@@ -250,7 +291,7 @@
         -->
 
         <!-- Message Input -->
-        <div class="flex-1 relative">
+        <div class="flex-1 relative flex items-center">
           <textarea
             v-model="currentMessage"
             @keydown="handleKeyDown"
@@ -264,7 +305,7 @@
           <!-- Bubble Animation Overlay -->
           <div 
             v-if="isLoading" 
-            class="absolute inset-0 pointer-events-none rounded-lg overflow-hidden"
+            class="absolute inset-0 pointer-events-none rounded-xl overflow-hidden"
             style="margin: 1px;"
           >
             <div class="bubble-container">
@@ -282,7 +323,7 @@
         <button 
           @click="sendCurrentMessage"
           :disabled="!currentMessage.trim() || isLoading"
-          class="flex-shrink-0 w-11 h-11 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 disabled:from-gray-400 disabled:to-gray-500 dark:disabled:from-gray-500 dark:disabled:to-gray-600 text-white disabled:text-gray-300 dark:disabled:text-gray-400 rounded-xl flex items-center justify-center transition-all duration-200 disabled:cursor-not-allowed shadow-lg hover:shadow-xl disabled:transform-none touch-manipulation"
+          class="flex-shrink-0 w-11 h-11 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 disabled:from-gray-400 disabled:to-gray-500 dark:disabled:from-gray-500 dark:disabled:to-gray-600 text-white disabled:text-gray-300 dark:disabled:text-gray-400 rounded-xl flex items-center justify-center transition-all duration-200 disabled:cursor-not-allowed shadow-lg hover:shadow-xl disabled:transform-none touch-manipulation self-stretch"
           title="Send message"
         >
           <!-- Use emoji as reliable cross-platform icon -->
@@ -649,12 +690,155 @@ const copyMessage = async (content) => {
   }
 }
 
+// Cache for parsed citations to avoid re-parsing on every render
+const citationCache = new WeakMap()
+
+// Parse citations from message content
+const parseCitations = (content) => {
+  if (!content) return { mainContent: '', citations: [] }
+  
+  const citations = []
+  let mainContent = content
+  
+  // Look for SOURCE: lines at the end of the content
+  const lines = content.split('\n')
+  const sourceLines = []
+  let lastNonSourceIndex = lines.length - 1
+  
+  // Find all SOURCE: lines from the end
+  for (let i = lines.length - 1; i >= 0; i--) {
+    const line = lines[i].trim()
+    if (line.startsWith('SOURCE:')) {
+      sourceLines.unshift(line) // Add to beginning to maintain order
+      lastNonSourceIndex = i - 1
+    } else if (line !== '' && sourceLines.length > 0) {
+      // We've found non-SOURCE content after finding SOURCE lines
+      break
+    }
+  }
+  
+  // If we found SOURCE lines, process them
+  if (sourceLines.length > 0) {
+    // Remove SOURCE lines from main content
+    mainContent = lines.slice(0, lastNonSourceIndex + 1).join('\n').trim()
+    
+    // Parse each SOURCE line
+    sourceLines.forEach(line => {
+      try {
+        // Extract JSON from SOURCE: line
+        const jsonStr = line.replace(/^SOURCE:\s*/, '').trim()
+        const citationData = JSON.parse(jsonStr)
+        
+        // Parse the URL to extract components
+        const url = citationData.citation_url
+        const urlMatch = url.match(/\/documents\/([a-f0-9-]+)(\?.*)?/)
+        
+        if (urlMatch) {
+          const docId = urlMatch[1]
+          const queryString = urlMatch[2] || ''
+          
+          // Parse query parameters
+          let page = null
+          let section = null
+          let highlight = null
+          
+          if (queryString) {
+            const params = new URLSearchParams(queryString)
+            page = params.get('page')
+            section = params.get('section')
+            highlight = params.get('highlight')
+          }
+          
+          citations.push({
+            text: citationData.source,
+            url: url,
+            docId: docId,
+            page: page,
+            section: section,
+            highlight: highlight,
+            type: 'source'
+          })
+        }
+      } catch (e) {
+        console.error('Failed to parse SOURCE line:', line, e)
+      }
+    })
+  }
+  
+  return { mainContent, citations }
+}
+
+// Format message with citations extracted
+const formatMessageWithCitations = (message) => {
+  // Use cache to avoid re-parsing
+  if (citationCache.has(message)) {
+    return citationCache.get(message)
+  }
+  
+  if (message.role === 'user') {
+    // User messages don't need citation parsing
+    const result = {
+      mainContent: formatMessageContent(message.content, false),
+      citations: []
+    }
+    citationCache.set(message, result)
+    return result
+  }
+  
+  // Parse citations from AI messages
+  const { mainContent, citations } = parseCitations(message.content)
+  
+  // Format the main content (with skipCitations=true since we already extracted them)
+  const formattedContent = formatMessageContent(mainContent, true)
+  
+  const result = {
+    mainContent: formattedContent,
+    citations: citations
+  }
+  
+  citationCache.set(message, result)
+  return result
+}
+
+// Open citation in new tab
+const openCitation = (citation) => {
+  if (citation.docId) {
+    // Build the route for the document viewer
+    // Convert query parameters to hash for Vue router
+    let hash = ''
+    const hashParts = []
+    
+    if (citation.page) {
+      hashParts.push(`page=${citation.page}`)
+    }
+    if (citation.section) {
+      hashParts.push(`section=${citation.section}`)
+    }
+    if (citation.highlight) {
+      hashParts.push(`highlight=${citation.highlight}`)
+    }
+    
+    if (hashParts.length > 0) {
+      hash = '#' + hashParts.join('&')
+    }
+    
+    const routeData = router.resolve({
+      name: 'document-viewer',
+      params: { id: citation.docId },
+      hash: hash
+    })
+    
+    // Open in new tab
+    window.open(routeData.href, '_blank')
+  }
+}
+
 // Format message content - detect and render HTML safely
-const formatMessageContent = (content) => {
+const formatMessageContent = (content, skipCitations = false) => {
   if (!content) return ''
   
-  // Check if content contains HTML tags
-  const htmlTagPattern = /<[^>]+>/
+  // Check if content contains HTML tags (but not inline-citation-ref spans we added)
+  const htmlTagPattern = /<(?!span class="inline-citation-ref")[^>]+>/
   
   if (htmlTagPattern.test(content)) {
     // Content contains HTML, return as-is for v-html rendering
@@ -663,6 +847,11 @@ const formatMessageContent = (content) => {
   } else {
     // Plain text content - preserve line breaks and whitespace
     let formatted = content.replace(/\n/g, '<br>').replace(/\s\s+/g, match => '&nbsp;'.repeat(match.length))
+    
+    // Skip citation processing if already handled by parseCitations
+    if (skipCitations) {
+      return formatted
+    }
     
     // Parse markdown-style links first: [text](/documents/...)
     const markdownLinkPattern = /\[([^\]]+)\]\((\/documents\/[a-f0-9-]+[^)]*)\)/g
@@ -747,6 +936,26 @@ const handleCitationClick = (event) => {
       
       // Open in new tab
       window.open(routeData.href, '_blank')
+    }
+  }
+  
+  // Check if the clicked element is an inline citation reference
+  const inlineRef = event.target.closest('.inline-citation-ref')
+  if (inlineRef) {
+    event.preventDefault()
+    
+    const url = inlineRef.getAttribute('data-url')
+    if (url) {
+      // Parse the URL to extract document ID and page
+      const urlMatch = url.match(/\/documents\/([a-f0-9-]+)(#page=(\d+))?/)
+      if (urlMatch) {
+        const [, docId, , page] = urlMatch
+        openCitation({
+          url: url,
+          docId: docId,
+          page: page || null
+        })
+      }
     }
   }
 }
@@ -1186,5 +1395,52 @@ textarea:focus {
 
 .dark .message-content blockquote {
   border-left-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Citation Cards Styles */
+.citation-card {
+  transition: all 0.2s ease;
+  backdrop-filter: blur(4px);
+}
+
+.citation-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+/* Inline citation references */
+.inline-citation-ref {
+  display: inline-block;
+  font-size: 0.85em;
+  vertical-align: super;
+  font-weight: 600;
+  padding: 0 2px;
+}
+
+/* Citation section animations */
+@keyframes citationFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.citation-section {
+  animation: citationFadeIn 0.4s ease-out;
+}
+
+/* Enhanced citation badge styling */
+.citation-badge {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.citation-badge:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 </style>
