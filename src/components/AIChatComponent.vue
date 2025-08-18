@@ -664,13 +664,24 @@ const formatMessageContent = (content) => {
     // Plain text content - preserve line breaks and whitespace
     let formatted = content.replace(/\n/g, '<br>').replace(/\s\s+/g, match => '&nbsp;'.repeat(match.length))
     
-    // Parse and convert citation URLs to clickable links
+    // Parse markdown-style links first: [text](/documents/...)
+    const markdownLinkPattern = /\[([^\]]+)\]\((\/documents\/[a-f0-9-]+[^)]*)\)/g
+    formatted = formatted.replace(markdownLinkPattern, (match, linkText, url) => {
+      const urlMatch = url.match(/\/documents\/([a-f0-9-]+)(#[^\s)]+)?/)
+      if (urlMatch) {
+        const [, docId, hash] = urlMatch
+        return `<a href="${url}" class="citation-link text-blue-600 hover:text-blue-800 underline" data-doc-id="${docId}" data-doc-hash="${hash || ''}" title="Open in new tab">📄 ${linkText}</a>`
+      }
+      return match
+    })
+    
+    // Parse and convert bare citation URLs to clickable links
     // Look for patterns like: /documents/{uuid}#section=...
-    const citationPattern = /\/documents\/([a-f0-9-]+)(#[^\s]+)?/g
+    const citationPattern = /(?<!\()\/documents\/([a-f0-9-]+)(#[^\s]+)?(?!\))/g
     formatted = formatted.replace(citationPattern, (match, docId, hash) => {
       const fullUrl = `/documents/${docId}${hash || ''}`
       // Use data attributes to store the URL for Vue Router navigation
-      return `<a href="${fullUrl}" class="citation-link text-blue-600 hover:text-blue-800 underline" data-doc-id="${docId}" data-doc-hash="${hash || ''}">📄 View Document</a>`
+      return `<a href="${fullUrl}" class="citation-link text-blue-600 hover:text-blue-800 underline" data-doc-id="${docId}" data-doc-hash="${hash || ''}" title="Open in new tab">📄 View Document</a>`
     })
     
     // Also look for citation patterns in structured responses
@@ -688,7 +699,7 @@ const formatMessageContent = (content) => {
       const urlMatch = url.match(/\/documents\/([a-f0-9-]+)(#[^\s]+)?/)
       if (urlMatch) {
         const [, docId, hash] = urlMatch
-        return `Citation: <a href="${url}" class="citation-link text-blue-600 hover:text-blue-800 underline" data-doc-id="${docId}" data-doc-hash="${hash || ''}">📄 Open in Viewer</a>`
+        return `Citation: <a href="${url}" class="citation-link text-blue-600 hover:text-blue-800 underline" data-doc-id="${docId}" data-doc-hash="${hash || ''}" title="Open in new tab">📄 Open in Viewer</a>`
       }
       return match // Return original if pattern doesn't match
     })
@@ -727,12 +738,15 @@ const handleCitationClick = (event) => {
     const docHash = link.getAttribute('data-doc-hash') || ''
     
     if (docId) {
-      // Navigate using Vue Router
-      router.push({
+      // Open in new tab using router.resolve to get the URL
+      const routeData = router.resolve({
         name: 'document-viewer',
         params: { id: docId },
         hash: docHash
       })
+      
+      // Open in new tab
+      window.open(routeData.href, '_blank')
     }
   }
 }

@@ -16,20 +16,22 @@
         <!-- Page navigation -->
         <button 
           @click="previousPage" 
-          :disabled="currentPage <= 1"
-          class="px-2 py-1 text-sm bg-blue-500 text-white rounded disabled:opacity-50"
+          :disabled="currentPage <= 1 || !pdfBlobUrl"
+          class="px-2 py-1 text-sm bg-blue-500 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed"
+          title="Previous page"
         >
-          Previous
+          ←
         </button>
-        <span class="text-sm">
-          Page {{ currentPage }} / {{ totalPages }}
+        <span class="text-sm font-medium">
+          {{ currentPage }}/{{ totalPages }}
         </span>
         <button 
           @click="nextPage" 
-          :disabled="currentPage >= totalPages"
-          class="px-2 py-1 text-sm bg-blue-500 text-white rounded disabled:opacity-50"
+          :disabled="currentPage >= totalPages || !pdfBlobUrl || totalPages <= 1"
+          class="px-2 py-1 text-sm bg-blue-500 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed"
+          title="Next page"
         >
-          Next
+          →
         </button>
         
         <!-- Search within document -->
@@ -109,27 +111,36 @@
           </div>
         </div>
         
-        <!-- PDF.js canvas or iframe for PDF display -->
+        <!-- PDF display using vue-pdf-embed -->
         <div v-else class="pdf-viewer bg-white shadow-lg mx-auto" style="max-width: 850px;">
           <!-- Display PDF content -->
           <div v-if="pdfBlobUrl" class="pdf-display">
-            <iframe 
-              :src="pdfDisplayUrl"
+            <vue-pdf-embed
+              :source="pdfBlobUrl"
+              :page="currentPage"
+              :render-text="true"
+              @loaded="onPdfLoaded"
+              @rendered="onPdfRendered"
+              @text-loaded="onTextLoaded"
               class="w-full"
-              style="height: 800px; border: none;"
-              @load="onPdfLoad"
-            ></iframe>
+              style="min-height: 800px;"
+              ref="pdfViewer"
+            />
           </div>
           <div v-else-if="!loading" class="text-center py-8 text-gray-500">
             <p>PDF viewer will be displayed here</p>
             <p class="text-sm mt-2">Document: {{ document?.title || 'Loading...' }}</p>
           </div>
           
-          <!-- Note about limitations -->
-          <div v-if="pdfBlobUrl && highlightedChunk" class="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-sm">
+          <!-- Text search/highlight info -->
+          <div v-if="searchingText" class="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-sm">
+            <p class="text-blue-800">
+              Searching for cited text...
+            </p>
+          </div>
+          <div v-else-if="highlightedChunk && !foundText" class="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-sm">
             <p class="text-yellow-800">
-              Note: Text highlighting is not available in the basic PDF viewer. 
-              The citation refers to content in this document.
+              Citation reference loaded. Text highlighting in progress...
             </p>
           </div>
         </div>
@@ -160,13 +171,17 @@
 </template>
 
 <script>
-import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { configService } from '@/services/configService'
 import { supabase } from '@/services/supabase'
+import VuePdfEmbed from 'vue-pdf-embed'
 
 export default {
   name: 'DocumentViewer',
+  components: {
+    VuePdfEmbed
+  },
   setup() {
     const route = useRoute()
     const router = useRouter()
@@ -177,15 +192,20 @@ export default {
     const document = ref(null)
     const toc = ref([])
     const currentPage = ref(1)
-    const totalPages = ref(0)
+    const totalPages = ref(1)
     const searchQuery = ref('')
     const searchResults = ref([])
     const pdfUrl = ref('')
     const pdfBlobUrl = ref('')
     const highlightedChunk = ref(null)
+    const chunkText = ref('')
+    const chunkInfo = ref(null)
+    const searchingText = ref(false)
+    const foundText = ref(false)
+    const pdfPageCount = ref(0)
     
-    // Canvas ref for PDF.js
-    const pdfCanvas = ref(null)
+    // Refs for PDF viewer
+    const pdfViewer = ref(null)
     
     // Computed
     const documentId = computed(() => route.params.id)
@@ -296,7 +316,8 @@ export default {
         const data = await response.json()
         document.value = data.document
         toc.value = data.toc || []
-        totalPages.value = data.document?.page_count || 0
+        // Don't set totalPages here - wait for PDF to load
+        // totalPages.value = data.document?.page_count || 0
         pdfUrl.value = data.pdf_url
         
         // Fetch the PDF with authentication
@@ -322,6 +343,25 @@ export default {
           if (startPage) {
             currentPage.value = startPage
           }
+        }
+        
+        // Handle chunk info for highlighting
+        if (data.chunk_info) {
+          chunkInfo.value = data.chunk_info
+          chunkText.value = data.chunk_info.text || ''
+          
+          // Extract page from chunk's book_pages
+          if (data.chunk_info.book_pages) {
+            // Parse PostgreSQL range format like '[10,12)'
+            const match = data.chunk_info.book_pages.match(/\[(\d+),(\d+)\)/)
+            if (match) {
+              const startPage = parseInt(match[1])
+              currentPage.value = startPage
+              console.log('Navigating to chunk page:', startPage)
+            }
+          }
+          
+          console.log('Chunk text to highlight:', chunkText.value.substring(0, 100) + '...')
         }
         
       } catch (err) {
@@ -413,13 +453,25 @@ export default {
       if (currentPage.value > 1) {
         currentPage.value--
         updateUrlHash()
+        // Clear highlights when changing pages
+        foundText.value = false
+        clearHighlights()
       }
     }
     
     const nextPage = () => {
+      console.log('Next button clicked. Current:', currentPage.value, 'Total:', totalPages.value)
       if (currentPage.value < totalPages.value) {
         currentPage.value++
+        console.log('Navigating to page:', currentPage.value)
         updateUrlHash()
+        // Clear highlights when changing pages
+        foundText.value = false
+        clearHighlights()
+        // Force re-render of PDF component
+        nextTick(() => {
+          console.log('Page updated to:', currentPage.value)
+        })
       }
     }
     
@@ -469,17 +521,227 @@ export default {
       return text.substring(0, maxLength) + '...'
     }
     
-    const onPdfLoad = () => {
-      // PDF has loaded in iframe
-      console.log('PDF loaded, current page:', currentPage.value)
-      // Note: Page navigation and highlighting in blob URLs is limited
-      // Full functionality requires PDF.js implementation
+    const onPdfLoaded = (e) => {
+      // PDF document has been loaded
+      const pageCount = e?.pagesCount || e?.numPages || e
+      console.log('PDF loaded event:', e)
+      console.log('PDF loaded, pages:', pageCount)
+      
+      if (typeof pageCount === 'number' && pageCount > 0) {
+        pdfPageCount.value = pageCount
+        totalPages.value = pageCount
+        
+        // Ensure current page is within bounds
+        if (currentPage.value > totalPages.value) {
+          currentPage.value = totalPages.value
+        }
+        if (currentPage.value < 1) {
+          currentPage.value = 1
+        }
+      } else {
+        console.warn('Could not determine page count from PDF loaded event')
+      }
+    }
+    
+    const onPdfRendered = async () => {
+      // Current page has been rendered
+      console.log('PDF page rendered:', currentPage.value)
+      
+      // Clear any previous highlights
+      clearHighlights()
+      
+      // If we have a chunk to highlight, search for it after a delay
+      if (chunkText.value && !foundText.value) {
+        // Wait for text layer to be ready
+        setTimeout(() => {
+          searchForChunkText()
+        }, 500)
+      }
+    }
+    
+    const onTextLoaded = () => {
+      // Text layer has been loaded for the current page
+      console.log('Text layer loaded for page:', currentPage.value)
+      
+      // Clear any previous highlights
+      clearHighlights()
+      
+      // Now we can search and highlight text
+      if (chunkText.value && !foundText.value) {
+        // Give text layer time to fully render
+        setTimeout(() => {
+          searchForChunkText()
+        }, 200)
+      }
+    }
+    
+    const searchForChunkText = async () => {
+      // Search for the chunk text in the PDF
+      if (!chunkText.value) {
+        console.log('No chunk text to search for')
+        return
+      }
+      
+      searchingText.value = true
+      
+      // Wait for next tick to ensure PDF is rendered
+      await nextTick()
+      
+      // Try to highlight the text
+      const success = await highlightChunkText()
+      
+      searchingText.value = false
+      foundText.value = success
+    }
+    
+    const highlightChunkText = async () => {
+      // Highlight the chunk text on the current page
+      if (!chunkText.value || !pdfViewer.value) {
+        console.log('No chunk text or PDF viewer not ready')
+        return false
+      }
+      
+      console.log('Attempting to highlight text:', chunkText.value.substring(0, 100) + '...')
+      
+      try {
+        // Wait a moment for text layer to be fully rendered
+        await new Promise(resolve => setTimeout(resolve, 300))
+        
+        // Get the PDF viewer container
+        const container = pdfViewer.value.$el
+        if (!container) {
+          console.log('PDF container not found')
+          return false
+        }
+        
+        // Find the text layer
+        const textLayer = container.querySelector('.textLayer')
+        if (!textLayer) {
+          console.log('Text layer not found - text may not be rendered yet')
+          return false
+        }
+        
+        // Get all text spans in the layer
+        const textSpans = textLayer.querySelectorAll('span')
+        console.log(`Found ${textSpans.length} text spans in the text layer`)
+        
+        if (textSpans.length === 0) {
+          console.log('No text spans found in text layer')
+          return false
+        }
+        
+        // Normalize the chunk text for searching (remove extra whitespace, newlines)
+        const normalizedChunk = chunkText.value
+          .replace(/\s+/g, ' ')
+          .trim()
+          .toLowerCase()
+        
+        // Take first 50 characters for initial search
+        const searchText = normalizedChunk.substring(0, 50).toLowerCase()
+        
+        // Build the page text from spans to find our chunk
+        let pageText = ''
+        const spanTexts = []
+        textSpans.forEach(span => {
+          const text = span.textContent || ''
+          spanTexts.push({ span, text, start: pageText.length })
+          pageText += text
+        })
+        
+        // Normalize page text
+        const normalizedPageText = pageText.replace(/\s+/g, ' ').toLowerCase()
+        
+        // Find the chunk text in the page
+        const chunkIndex = normalizedPageText.indexOf(searchText)
+        
+        if (chunkIndex === -1) {
+          console.log('Chunk text not found on current page')
+          console.log('Searching for:', searchText)
+          console.log('Page text sample:', normalizedPageText.substring(0, 200))
+          return false
+        }
+        
+        console.log(`Found chunk at index ${chunkIndex}`)
+        
+        // Find which spans contain our text
+        const highlightSpans = []
+        const endIndex = chunkIndex + searchText.length
+        
+        for (const spanInfo of spanTexts) {
+          const spanEnd = spanInfo.start + spanInfo.text.length
+          
+          // Check if this span overlaps with our chunk
+          if (spanEnd > chunkIndex && spanInfo.start < endIndex) {
+            highlightSpans.push(spanInfo.span)
+          }
+        }
+        
+        console.log(`Highlighting ${highlightSpans.length} spans`)
+        
+        // Apply highlighting to the found spans
+        highlightSpans.forEach(span => {
+          // Add highlight class
+          span.classList.add('chunk-highlight')
+          
+          // Also add inline style for immediate visibility
+          span.style.backgroundColor = 'rgba(255, 255, 0, 0.4)'
+          span.style.color = 'black'
+          span.style.fontWeight = 'bold'
+        })
+        
+        // Scroll the first highlighted span into view
+        if (highlightSpans.length > 0) {
+          highlightSpans[0].scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
+          })
+        }
+        
+        return true
+        
+      } catch (error) {
+        console.error('Error highlighting text:', error)
+        return false
+      }
+    }
+    
+    const clearHighlights = () => {
+      // Clear any existing highlights
+      if (pdfViewer.value && pdfViewer.value.$el) {
+        const highlightedSpans = pdfViewer.value.$el.querySelectorAll('.chunk-highlight')
+        highlightedSpans.forEach(span => {
+          span.classList.remove('chunk-highlight')
+          span.style.backgroundColor = ''
+          span.style.color = ''
+          span.style.fontWeight = ''
+        })
+      }
     }
     
     // Watch for route changes
     watch(() => route.hash, () => {
       if (route.name === 'document-viewer') {
+        // Reset highlight state when hash changes
+        foundText.value = false
+        clearHighlights()
         loadDocument()
+      }
+    })
+    
+    // Watch for page changes
+    watch(currentPage, async (newPage, oldPage) => {
+      console.log('Page changed from', oldPage, 'to', newPage)
+      // Only clear if page actually changed
+      if (newPage !== oldPage && oldPage !== undefined) {
+        // Reset highlight state when page changes
+        foundText.value = false
+        clearHighlights()
+        
+        // Force PDF viewer to update if it exists
+        if (pdfViewer.value) {
+          await nextTick()
+          console.log('PDF viewer ref exists, page should update to:', newPage)
+        }
       }
     })
     
@@ -507,10 +769,13 @@ export default {
       pdfUrl,
       pdfBlobUrl,
       pdfDisplayUrl,
-      pdfCanvas,
+      pdfViewer,
       documentTitle,
       pdfViewerUrl,
       highlightedChunk,
+      searchingText,
+      foundText,
+      pdfPageCount,
       hashParams,
       loadDocument,
       navigateToSection,
@@ -521,7 +786,10 @@ export default {
       goBack,
       getTocItemClass,
       truncateText,
-      onPdfLoad
+      onPdfLoaded,
+      onPdfRendered,
+      onTextLoaded,
+      clearHighlights
     }
   }
 }
@@ -553,5 +821,43 @@ export default {
 
 .highlight {
   animation: highlight-fade 2s ease-in-out;
+}
+
+/* PDF.js text layer styles */
+:deep(.textLayer) {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  opacity: 0.2;
+  line-height: 1;
+}
+
+:deep(.textLayer > span) {
+  color: transparent;
+  position: absolute;
+  white-space: pre;
+  cursor: text;
+  transform-origin: 0% 0%;
+}
+
+:deep(.textLayer ::selection) {
+  background: rgba(0, 0, 255, 0.3);
+}
+
+/* Chunk highlight styles */
+:deep(.chunk-highlight) {
+  background-color: rgba(255, 255, 0, 0.4) !important;
+  color: black !important;
+  font-weight: bold !important;
+  animation: highlight-pulse 2s ease-in-out;
+}
+
+@keyframes highlight-pulse {
+  0% { background-color: rgba(255, 255, 0, 0.8); }
+  50% { background-color: rgba(255, 255, 0, 0.4); }
+  100% { background-color: rgba(255, 255, 0, 0.4); }
 }
 </style>
