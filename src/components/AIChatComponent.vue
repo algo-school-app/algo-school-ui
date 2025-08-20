@@ -323,7 +323,7 @@
         <button 
           @click="sendCurrentMessage"
           :disabled="!currentMessage.trim() || isLoading"
-          class="flex-shrink-0 w-11 h-11 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 disabled:from-gray-400 disabled:to-gray-500 dark:disabled:from-gray-500 dark:disabled:to-gray-600 text-white disabled:text-gray-300 dark:disabled:text-gray-400 rounded-xl flex items-center justify-center transition-all duration-200 disabled:cursor-not-allowed shadow-lg hover:shadow-xl disabled:transform-none touch-manipulation self-stretch"
+          class="flex-shrink-0 w-11 h-11 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 disabled:from-gray-400 disabled:to-gray-500 dark:disabled:from-gray-500 dark:disabled:to-gray-600 text-white disabled:text-gray-300 dark:disabled:text-gray-400 rounded-xl flex items-center justify-center transition-all duration-200 disabled:cursor-not-allowed shadow-lg hover:shadow-xl disabled:transform-none touch-manipulation"
           title="Send message"
         >
           <!-- Use emoji as reliable cross-platform icon -->
