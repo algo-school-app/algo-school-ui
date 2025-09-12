@@ -105,10 +105,32 @@
         />
       </g>
 
-      <!-- Graduation Cap Icon -->
+      <!-- Graduation Cap Icon (More Distinctive Version) -->
       <g v-else-if="name === 'graduation'" class="hand-drawn-path">
+        <!-- Mortarboard top (square academic cap) -->
         <path
-          d="M2 12l10-5 10 5-10 5-10-5z"
+          d="M2 10l10-5 10 5-10 5-10-5z"
+          :stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          :fill="currentColor"
+          fill-opacity="0.15"
+          class="wobbly-line"
+        />
+        <!-- Cap base/band -->
+        <path
+          d="M5 11.5v5c0 1.5 3.1 2.5 7 2.5s7-1 7-2.5v-5"
+          :stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          fill="none"
+          class="wobbly-line"
+        />
+        <!-- Tassel string -->
+        <path
+          d="M12 5v7"
           :stroke="currentColor"
           stroke-width="1.5"
           stroke-linecap="round"
@@ -116,22 +138,36 @@
           fill="none"
           class="wobbly-line"
         />
-        <path
-          d="M6 14v4c0 1.1 2.7 2 6 2s6-.9 6-2v-4"
-          :stroke="currentColor"
-          stroke-width="1.5"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          fill="none"
-          class="wobbly-line"
-        />
+        <!-- Tassel top (button) -->
         <circle
-          cx="22"
-          cy="12"
-          r="2"
+          cx="12"
+          cy="5"
+          r="1.5"
+          :fill="currentColor"
           :stroke="currentColor"
-          stroke-width="1.5"
+          stroke-width="0.5"
+          class="wobbly-dot"
+        />
+        <!-- Tassel fringe -->
+        <path
+          d="M11 11l-1 2.5 2 0-1-2.5zM13 11l1 2.5-2 0 1-2.5z"
+          :stroke="currentColor"
+          stroke-width="1"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          :fill="currentColor"
+          fill-opacity="0.3"
+          class="wobbly-line"
+        />
+        <!-- Extra detail lines on mortarboard for depth -->
+        <path
+          d="M7 9l5-2.5M17 9l-5-2.5"
+          :stroke="currentColor"
+          stroke-width="0.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
           fill="none"
+          opacity="0.6"
           class="wobbly-line"
         />
       </g>
@@ -1078,6 +1114,213 @@
         />
       </g>
 
+      <!-- Magical Learning Tree Icon (Creative Education) -->
+      <g v-else-if="name === 'magical-tree'" class="hand-drawn-path">
+        <!-- Tree trunk -->
+        <path
+          d="M11 18v4 M13 18v4 M11 22h2"
+          :stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          fill="none"
+          class="wobbly-line"
+        />
+        
+        <!-- Tree crown (cloud-like shape with books) -->
+        <ellipse
+          cx="12"
+          cy="11"
+          rx="8"
+          ry="7"
+          :stroke="currentColor"
+          stroke-width="1.5"
+          :fill="currentColor"
+          fill-opacity="0.1"
+          class="wobbly-line"
+        />
+        
+        <!-- Book leaves -->
+        <rect x="7" y="8" width="3" height="2" rx="0.3" 
+          :fill="currentColor" fill-opacity="0.8" 
+          transform="rotate(-20 8.5 9)" />
+        <rect x="14" y="7" width="3" height="2" rx="0.3" 
+          :fill="currentColor" fill-opacity="0.6" 
+          transform="rotate(15 15.5 8)" />
+        <rect x="10" y="12" width="3" height="2" rx="0.3" 
+          :fill="currentColor" fill-opacity="0.7" 
+          transform="rotate(-10 11.5 13)" />
+        <rect x="13" y="11" width="3" height="2" rx="0.3" 
+          :fill="currentColor" fill-opacity="0.5" 
+          transform="rotate(25 14.5 12)" />
+        
+        <!-- Wise owl on branch -->
+        <ellipse cx="12" cy="11" rx="1.5" ry="2" 
+          :fill="currentColor" fill-opacity="0.3" />
+        <!-- Owl eyes -->
+        <circle cx="11.3" cy="10.5" r="0.4" :fill="currentColor" />
+        <circle cx="12.7" cy="10.5" r="0.4" :fill="currentColor" />
+        <!-- Owl beak -->
+        <path d="M12 11 L11.7 11.3 L12.3 11.3 Z" 
+          :fill="currentColor" fill-opacity="0.8" />
+        
+        <!-- Sparkles around tree -->
+        <circle cx="6" cy="8" r="0.3" :fill="currentColor" fill-opacity="0.6" class="wobbly-dot" />
+        <circle cx="18" cy="9" r="0.3" :fill="currentColor" fill-opacity="0.6" class="wobbly-dot" />
+        <circle cx="5" cy="14" r="0.3" :fill="currentColor" fill-opacity="0.6" class="wobbly-dot" />
+        <circle cx="19" cy="13" r="0.3" :fill="currentColor" fill-opacity="0.6" class="wobbly-dot" />
+        
+        <!-- Stars for magic -->
+        <path d="M7 6 L7.3 5.5 L7.5 6 L7.3 6.5 Z" 
+          :fill="currentColor" fill-opacity="0.7" />
+        <path d="M17 7 L17.3 6.5 L17.5 7 L17.3 7.5 Z" 
+          :fill="currentColor" fill-opacity="0.7" />
+      </g>
+
+      <!-- School Building Icon (Education Institution) -->
+      <g v-else-if="name === 'school'" class="hand-drawn-path">
+        <!-- Main building structure -->
+        <path
+          d="M4 21V10L12 5l8 5v11"
+          :stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          fill="none"
+          class="wobbly-line"
+        />
+        <!-- Roof -->
+        <path
+          d="M2 11l10-6 10 6"
+          :stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          fill="none"
+          class="wobbly-line"
+        />
+        <!-- Door -->
+        <rect
+          x="10"
+          y="15"
+          width="4"
+          height="6"
+          :stroke="currentColor"
+          stroke-width="1.5"
+          fill="none"
+          class="wobbly-line"
+        />
+        <!-- Windows -->
+        <rect
+          x="6"
+          y="12"
+          width="3"
+          height="3"
+          :stroke="currentColor"
+          stroke-width="1.5"
+          fill="none"
+          class="wobbly-line"
+        />
+        <rect
+          x="15"
+          y="12"
+          width="3"
+          height="3"
+          :stroke="currentColor"
+          stroke-width="1.5"
+          fill="none"
+          class="wobbly-line"
+        />
+        <!-- Flag on top (education symbol) -->
+        <path
+          d="M12 5V2M12 2l2 1-2 1"
+          :stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          fill="none"
+          class="wobbly-line"
+        />
+      </g>
+
+      <!-- Open Book Icon (Learning/Education) -->
+      <g v-else-if="name === 'book-open'" class="hand-drawn-path">
+        <!-- Left page -->
+        <path
+          d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"
+          :stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          fill="none"
+          class="wobbly-line"
+        />
+        <!-- Right page -->
+        <path
+          d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"
+          :stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          fill="none"
+          class="wobbly-line"
+        />
+        <!-- Text lines on left page -->
+        <path
+          d="M5 8h4M5 11h3M5 14h4"
+          :stroke="currentColor"
+          stroke-width="1"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          fill="none"
+          class="wobbly-line"
+        />
+        <!-- Text lines on right page -->
+        <path
+          d="M15 8h4M15 11h3M15 14h4"
+          :stroke="currentColor"
+          stroke-width="1"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          fill="none"
+          class="wobbly-line"
+        />
+      </g>
+
+      <!-- Logout/Sign Out Icon -->
+      <g v-else-if="name === 'logout'" class="hand-drawn-path">
+        <!-- Exit door/frame -->
+        <path
+          d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"
+          :stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          fill="none"
+          class="wobbly-line"
+        />
+        <!-- Arrow pointing out -->
+        <path
+          d="M16 17l5-5-5-5"
+          :stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          fill="none"
+          class="wobbly-line"
+        />
+        <!-- Line going out -->
+        <path
+          d="M21 12H9"
+          :stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          fill="none"
+          class="wobbly-line"
+        />
+      </g>
+
       <!-- Parents Icon (Father and Mother) -->
       <g v-else-if="name === 'parents'" class="hand-drawn-path">
         <!-- Father (taller, left) -->
@@ -1276,61 +1519,100 @@ const customStyle = computed(() => {
 <style scoped>
 .hand-drawn-icon {
   transition: all 0.2s ease;
+  -webkit-transition: all 0.2s ease;
 }
 
 .hand-drawn-icon:hover {
   transform: scale(1.05);
+  -webkit-transform: scale(1.05);
 }
 
 .hand-drawn-svg {
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+  /* Simplified for Safari compatibility */
+  opacity: 1;
 }
 
-/* Hand-drawn wobbly effect */
+/* Hand-drawn wobbly effect - simplified for Safari */
 .wobbly-line {
-  animation: wobble 3s ease-in-out infinite;
-  transform-origin: center;
+  /* Disabled animation for Safari compatibility */
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .wobbly-dot {
-  animation: pulse 2s ease-in-out infinite;
+  /* Disabled animation for Safari compatibility */
+  opacity: 1;
 }
 
-@keyframes wobble {
-  0%, 100% {
-    stroke-dasharray: none;
-    stroke-dashoffset: 0;
+/* Animations disabled for Safari compatibility */
+@supports (animation: wobble 3s) {
+  .wobbly-line {
+    animation: wobble 3s ease-in-out infinite;
+    -webkit-animation: wobble 3s ease-in-out infinite;
+    transform-origin: center;
+    -webkit-transform-origin: center;
   }
-  50% {
-    stroke-dasharray: 0.5 0.5;
-    stroke-dashoffset: 0.25;
+  
+  .wobbly-dot {
+    animation: pulse 2s ease-in-out infinite;
+    -webkit-animation: pulse 2s ease-in-out infinite;
   }
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
+  
+  @-webkit-keyframes wobble {
+    0%, 100% {
+      stroke-dasharray: none;
+      stroke-dashoffset: 0;
+    }
+    50% {
+      stroke-dasharray: 0.5 0.5;
+      stroke-dashoffset: 0.25;
+    }
   }
-  50% {
-    opacity: 0.8;
-    transform: scale(1.1);
+  
+  @keyframes wobble {
+    0%, 100% {
+      stroke-dasharray: none;
+      stroke-dashoffset: 0;
+    }
+    50% {
+      stroke-dasharray: 0.5 0.5;
+      stroke-dashoffset: 0.25;
+    }
   }
-}
-
-/* Hand-drawn style stroke variations */
-.wobbly-line {
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  filter: url(#roughPaper);
+  
+  @-webkit-keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+      -webkit-transform: scale(1);
+    }
+    50% {
+      opacity: 0.8;
+      -webkit-transform: scale(1.1);
+    }
+  }
+  
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.8;
+      transform: scale(1.1);
+    }
+  }
 }
 
 /* Add slight randomness to make it look hand-drawn */
-.hand-drawn-path path:nth-child(odd) {
-  animation-delay: 0.5s;
-}
-
-.hand-drawn-path path:nth-child(even) {
-  animation-delay: 1s;
+@supports (animation-delay: 0.5s) {
+  .hand-drawn-path path:nth-child(odd) {
+    animation-delay: 0.5s;
+    -webkit-animation-delay: 0.5s;
+  }
+  
+  .hand-drawn-path path:nth-child(even) {
+    animation-delay: 1s;
+    -webkit-animation-delay: 1s;
+  }
 }
 </style>

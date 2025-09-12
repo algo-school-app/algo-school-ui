@@ -1,9 +1,9 @@
 <template>
   <div class="h-screen w-screen bg-gray-50 dark:bg-gray-900 flex flex-col min-h-screen">
     <!-- Top Navigation Bar -->
-    <nav class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 h-14 md:h-16 flex-shrink-0 z-20">
+    <nav class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 h-auto sm:h-14 md:h-16 flex-shrink-0 z-20">
       <div class="px-2 sm:px-4 lg:px-8 h-full">
-        <div class="flex justify-between items-center h-full gap-2">
+        <div class="flex flex-wrap sm:flex-nowrap justify-between items-center h-full gap-2 py-2 sm:py-0">
           <!-- Left side - Mobile menu button + Title -->
           <div class="flex items-center min-w-0 flex-1">
             <button 
@@ -15,8 +15,8 @@
             <h1 class="text-sm sm:text-base md:text-xl font-semibold text-gray-900 dark:text-white truncate">MCGP School Dashboard</h1>
           </div>
 
-          <!-- Right side - Actions -->
-          <div class="flex items-center space-x-1 sm:space-x-2 md:space-x-3 flex-shrink-0">
+          <!-- Right side - Actions (Desktop) -->
+          <div class="hidden sm:flex items-center space-x-1 sm:space-x-2 md:space-x-3 flex-shrink-0">
             <!-- Seasonal Theme Selector - Hidden on mobile -->
             <div class="hidden sm:block">
               <SeasonalThemeSelector :show-controls="true" />
@@ -98,10 +98,10 @@
               </transition>
             </Menu>
 
-            <!-- Theme Toggle -->
+            <!-- Theme Toggle - Hidden on small screens -->
             <button 
               @click="toggleTheme" 
-              class="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 transition-all duration-200 touch-manipulation"
+              class="hidden md:block p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 transition-all duration-200 touch-manipulation"
             >
               <HandDrawnIcon :name="theme === 'light' ? 'moon' : 'sun'" size="sm" />
             </button>
@@ -111,9 +111,102 @@
               @click="logout" 
               class="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-all duration-200 text-xs sm:text-sm font-medium touch-manipulation"
             >
-              <i class="fas fa-sign-out-alt text-xs sm:text-sm"></i>
-              <span class="hidden lg:block">Sign out</span>
+              <HandDrawnIcon name="logout" size="xs" class="sm:hidden" />
+              <HandDrawnIcon name="logout" size="sm" class="hidden sm:inline-flex" />
+              <span class="hidden sm:inline">Sign out</span>
             </button>
+          </div>
+
+          <!-- Mobile Actions - Sign Out only -->
+          <div class="flex sm:hidden items-center space-x-2">
+            <button 
+              @click="logout" 
+              class="p-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-all duration-200 touch-manipulation"
+            >
+              <HandDrawnIcon name="logout" size="sm" />
+            </button>
+          </div>
+
+          <!-- Mobile Dropdowns - New Line -->
+          <div class="w-full sm:hidden flex items-center space-x-2 mt-2">
+            <!-- Tenant/Campus Selector Mobile -->
+            <Menu as="div" class="relative flex-1">
+              <MenuButton class="w-full flex items-center justify-between text-xs rounded-full bg-gray-100 dark:bg-gray-700 px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 touch-manipulation">
+                <div class="flex items-center">
+                  <HandDrawnIcon name="graduation" size="xs" class="text-gray-600 dark:text-gray-300 mr-2" />
+                  <span class="text-gray-700 dark:text-gray-200 truncate">{{ currentTenant }}</span>
+                </div>
+                <i class="fas fa-chevron-down text-gray-400 ml-2 text-xs"></i>
+              </MenuButton>
+              <transition
+                enter-active-class="transition duration-100 ease-out"
+                enter-from-class="transform scale-95 opacity-0"
+                enter-to-class="transform scale-100 opacity-100"
+                leave-active-class="transition duration-75 ease-in"
+                leave-from-class="transform scale-100 opacity-100"
+                leave-to-class="transform scale-95 opacity-0"
+              >
+                <MenuItems class="absolute left-0 right-0 mt-2 origin-top bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+                  <div class="py-1">
+                    <MenuItem v-for="tenant in availableTenants" :key="tenant.id" v-slot="{ active }">
+                      <button 
+                        @click="switchTenant(tenant.id)" 
+                        :class="[
+                          active ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300', 
+                          'group flex items-center px-4 py-2 text-sm w-full',
+                          tenant.is_current ? 'bg-blue-50 dark:bg-blue-900' : ''
+                        ]"
+                      >
+                        <HandDrawnIcon name="calendar" size="sm" class="mr-3 text-gray-400" />
+                        {{ tenant.display_name }}
+                        <i v-if="tenant.is_current" class="fas fa-check ml-auto text-blue-500"></i>
+                      </button>
+                    </MenuItem>
+                  </div>
+                </MenuItems>
+              </transition>
+            </Menu>
+
+            <!-- Academic Year Selector Mobile -->
+            <Menu as="div" class="relative flex-1">
+              <MenuButton class="w-full flex items-center justify-between text-xs rounded-full bg-gray-100 dark:bg-gray-700 px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 touch-manipulation">
+                <div class="flex items-center">
+                  <HandDrawnIcon name="book" size="xs" class="text-gray-600 dark:text-gray-300 mr-2" />
+                  <span class="text-gray-700 dark:text-gray-200 truncate">{{ currentAcademicYear.split(' ')[0] }}</span>
+                </div>
+                <i class="fas fa-chevron-down text-gray-400 ml-2 text-xs"></i>
+              </MenuButton>
+              <transition
+                enter-active-class="transition duration-100 ease-out"
+                enter-from-class="transform scale-95 opacity-0"
+                enter-to-class="transform scale-100 opacity-100"
+                leave-active-class="transition duration-75 ease-in"
+                leave-from-class="transform scale-100 opacity-100"
+                leave-to-class="transform scale-95 opacity-0"
+              >
+                <MenuItems class="absolute left-0 right-0 mt-2 origin-top bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+                  <div class="py-1">
+                    <MenuItem v-for="academicYear in availableAcademicYears" :key="academicYear.academic_year_id" v-slot="{ active }">
+                      <button 
+                        @click="switchAcademicYear(academicYear.academic_year_id)" 
+                        :class="[
+                          active ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300', 
+                          'group flex items-center px-4 py-2 text-sm w-full',
+                          academicYear.is_current ? 'bg-green-50 dark:bg-green-900' : ''
+                        ]"
+                      >
+                        <HandDrawnIcon name="calendar" size="sm" class="mr-3 text-gray-400" />
+                        <div class="flex flex-col items-start">
+                          <span class="font-medium">{{ academicYear.academic_year_display_name }}</span>
+                          <span class="text-xs text-gray-500 dark:text-gray-400">{{ academicYear.start_date }} - {{ academicYear.end_date }}</span>
+                        </div>
+                        <i v-if="academicYear.is_current" class="fas fa-check ml-auto text-green-500"></i>
+                      </button>
+                    </MenuItem>
+                  </div>
+                </MenuItems>
+              </transition>
+            </Menu>
           </div>
         </div>
       </div>

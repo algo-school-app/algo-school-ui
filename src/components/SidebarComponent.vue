@@ -8,9 +8,11 @@
     <!-- Header -->
     <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
       <div v-if="!isCollapsed || props.isMobile" class="flex items-center">
-        <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-105">
-          <HandDrawnIcon name="graduation" size="sm" class="text-white" />
-        </div>
+        <img 
+          src="/school-icon.svg" 
+          alt="MCGP School" 
+          class="w-8 h-8 transition-all duration-200 hover:scale-105 drop-shadow-md"
+        />
         <span class="ml-3 font-semibold text-gray-900 dark:text-white">MCGP School</span>
       </div>
       <button v-if="!props.isMobile" @click="$emit('toggle-sidebar')" 

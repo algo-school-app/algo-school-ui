@@ -15,6 +15,14 @@
       <div class="flex items-center space-x-2">
         <!-- Page navigation -->
         <button 
+          @click="firstPage" 
+          :disabled="currentPage <= 1 || !pdfBlobUrl"
+          class="px-2 py-1 text-sm bg-blue-500 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed"
+          title="First page"
+        >
+          ⏮
+        </button>
+        <button 
           @click="previousPage" 
           :disabled="currentPage <= 1 || !pdfBlobUrl"
           class="px-2 py-1 text-sm bg-blue-500 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed"
@@ -33,20 +41,13 @@
         >
           →
         </button>
-        
-        <!-- Search within document -->
-        <input 
-          v-model="searchQuery"
-          @keyup.enter="searchInDocument"
-          type="text" 
-          placeholder="Search in document..."
-          class="px-2 py-1 border rounded text-sm w-48"
-        >
         <button 
-          @click="searchInDocument"
-          class="px-3 py-1 text-sm bg-green-500 text-white rounded"
+          @click="lastPage" 
+          :disabled="currentPage >= totalPages || !pdfBlobUrl || totalPages <= 1"
+          class="px-2 py-1 text-sm bg-blue-500 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed"
+          title="Last page"
         >
-          Search
+          ⏭
         </button>
       </div>
     </div>
@@ -145,26 +146,6 @@
           </div>
         </div>
 
-        <!-- Search results overlay -->
-        <div v-if="searchResults.length > 0" class="search-results mt-4 bg-white p-4 rounded shadow">
-          <h4 class="font-semibold mb-2">Search Results ({{ searchResults.length }})</h4>
-          <ul class="space-y-2">
-            <li 
-              v-for="result in searchResults" 
-              :key="result.chunk_id"
-              class="border-b pb-2"
-            >
-              <a 
-                @click="navigateToResult(result)"
-                class="block hover:bg-gray-100 p-2 rounded cursor-pointer"
-              >
-                <div class="text-sm font-medium">{{ result.section || 'No section' }}</div>
-                <div class="text-xs text-gray-600">Pages: {{ result.pages }}</div>
-                <div class="text-sm mt-1">{{ truncateText(result.text, 150) }}</div>
-              </a>
-            </li>
-          </ul>
-        </div>
       </div>
     </div>
   </div>
@@ -193,8 +174,6 @@ export default {
     const toc = ref([])
     const currentPage = ref(1)
     const totalPages = ref(1)
-    const searchQuery = ref('')
-    const searchResults = ref([])
     const pdfUrl = ref('')
     const pdfBlobUrl = ref('')
     const highlightedChunk = ref(null)
@@ -339,8 +318,10 @@ export default {
         
         // Handle section navigation
         if (data.section_info) {
-          const startPage = data.section_info.start_book_page
+          // Prefer physical page for navigation, fallback to book page
+          const startPage = data.section_info.start_physical_page || data.section_info.start_book_page
           if (startPage) {
+            console.log(`Section navigation: Book page: ${data.section_info.start_book_page}, Physical page: ${data.section_info.start_physical_page || 'N/A'}`)
             currentPage.value = startPage
           }
         }
@@ -373,29 +354,16 @@ export default {
     }
     
     const navigateToSection = (tocItem) => {
-      if (tocItem.start_book_page) {
-        currentPage.value = tocItem.start_book_page
+      // Prefer physical page for navigation, fallback to book page
+      const targetPage = tocItem.start_physical_page || tocItem.start_book_page
+      
+      if (targetPage) {
+        console.log(`Navigating to section: "${tocItem.title}" - Book page: ${tocItem.start_book_page}, Physical page: ${tocItem.start_physical_page || 'N/A'}`)
+        currentPage.value = targetPage
         updateUrlHash()
       }
     }
     
-    const navigateToResult = (result) => {
-      // Parse the citation URL
-      const url = new URL(result.citation_url, window.location.origin)
-      const hash = url.hash.substring(1)
-      const params = new URLSearchParams(hash)
-      
-      // Update route with new hash
-      router.push({
-        path: route.path,
-        hash: `#${params.toString()}`
-      })
-      
-      // Highlight the result
-      if (result.chunk_id) {
-        highlightChunk(result.chunk_id)
-      }
-    }
     
     const highlightChunk = (chunkId) => {
       // This would integrate with PDF.js to highlight specific text
@@ -410,42 +378,14 @@ export default {
       // 3. Scroll to the location
     }
     
-    const searchInDocument = async () => {
-      if (!searchQuery.value.trim()) {
-        searchResults.value = []
-        return
-      }
-      
-      try {
-        // Get API URL from configService
-        const apiUrl = configService.getServerUrl()
-        
-        const response = await fetch(
-          `${apiUrl}/v1/documents/${documentId.value}/search`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${await getAuthToken()}`,
-              'X-Tenant-Domain': window.location.hostname
-            },
-            body: JSON.stringify({
-              query: searchQuery.value,
-              page_range: null // Search all pages
-            })
-          }
-        )
-        
-        if (!response.ok) {
-          throw new Error('Search failed')
-        }
-        
-        const data = await response.json()
-        searchResults.value = data.results || []
-        
-      } catch (err) {
-        console.error('Search error:', err)
-        error.value = 'Search failed'
+    
+    const firstPage = () => {
+      if (currentPage.value > 1) {
+        currentPage.value = 1
+        updateUrlHash()
+        // Clear highlights when changing pages
+        foundText.value = false
+        clearHighlights()
       }
     }
     
@@ -472,6 +412,16 @@ export default {
         nextTick(() => {
           console.log('Page updated to:', currentPage.value)
         })
+      }
+    }
+    
+    const lastPage = () => {
+      if (currentPage.value < totalPages.value) {
+        currentPage.value = totalPages.value
+        updateUrlHash()
+        // Clear highlights when changing pages
+        foundText.value = false
+        clearHighlights()
       }
     }
     
@@ -684,9 +634,13 @@ export default {
           span.classList.add('chunk-highlight')
           
           // Also add inline style for immediate visibility
-          span.style.backgroundColor = 'rgba(255, 255, 0, 0.4)'
+          // Using bright cyan that stands out on yellowish pages
+          span.style.backgroundColor = 'rgba(0, 200, 255, 0.5)'
           span.style.color = 'black'
           span.style.fontWeight = 'bold'
+          span.style.border = '2px solid rgba(0, 150, 255, 0.8)'
+          span.style.borderRadius = '3px'
+          span.style.padding = '1px 2px'
         })
         
         // Scroll the first highlighted span into view
@@ -714,6 +668,9 @@ export default {
           span.style.backgroundColor = ''
           span.style.color = ''
           span.style.fontWeight = ''
+          span.style.border = ''
+          span.style.borderRadius = ''
+          span.style.padding = ''
         })
       }
     }
@@ -764,8 +721,6 @@ export default {
       toc,
       currentPage,
       totalPages,
-      searchQuery,
-      searchResults,
       pdfUrl,
       pdfBlobUrl,
       pdfDisplayUrl,
@@ -779,10 +734,10 @@ export default {
       hashParams,
       loadDocument,
       navigateToSection,
-      navigateToResult,
-      searchInDocument,
+      firstPage,
       previousPage,
       nextPage,
+      lastPage,
       goBack,
       getTocItemClass,
       truncateText,
@@ -808,14 +763,9 @@ export default {
   background: #e5e5e5;
 }
 
-.search-results {
-  max-height: 300px;
-  overflow-y: auto;
-}
-
-/* Highlight animation */
+/* Highlight animation - using cyan instead of yellow */
 @keyframes highlight-fade {
-  0% { background-color: yellow; }
+  0% { background-color: rgba(0, 200, 255, 0.5); }
   100% { background-color: transparent; }
 }
 
@@ -847,17 +797,29 @@ export default {
   background: rgba(0, 0, 255, 0.3);
 }
 
-/* Chunk highlight styles */
+/* Chunk highlight styles - Using cyan color that stands out on yellowish pages */
 :deep(.chunk-highlight) {
-  background-color: rgba(255, 255, 0, 0.4) !important;
+  background-color: rgba(0, 200, 255, 0.5) !important;
   color: black !important;
   font-weight: bold !important;
+  border: 2px solid rgba(0, 150, 255, 0.8) !important;
+  border-radius: 3px !important;
+  padding: 1px 2px !important;
   animation: highlight-pulse 2s ease-in-out;
 }
 
 @keyframes highlight-pulse {
-  0% { background-color: rgba(255, 255, 0, 0.8); }
-  50% { background-color: rgba(255, 255, 0, 0.4); }
-  100% { background-color: rgba(255, 255, 0, 0.4); }
+  0% { 
+    background-color: rgba(0, 200, 255, 0.8);
+    box-shadow: 0 0 10px rgba(0, 200, 255, 0.6);
+  }
+  50% { 
+    background-color: rgba(0, 200, 255, 0.5);
+    box-shadow: 0 0 5px rgba(0, 200, 255, 0.3);
+  }
+  100% { 
+    background-color: rgba(0, 200, 255, 0.5);
+    box-shadow: none;
+  }
 }
 </style>

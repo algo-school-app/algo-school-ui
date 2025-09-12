@@ -1,0 +1,224 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- Gradient Definitions for Magical Effects -->
+  <defs>
+    <!-- Rainbow gradient for tree crown -->
+    <radialGradient id="treeGradient" cx="50%" cy="30%" r="60%">
+      <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+      <stop offset="20%" style="stop-color:#FF69B4;stop-opacity:1" />
+      <stop offset="40%" style="stop-color:#9370DB;stop-opacity:1" />
+      <stop offset="60%" style="stop-color:#00CED1;stop-opacity:1" />
+      <stop offset="80%" style="stop-color:#32CD32;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FF4500;stop-opacity:1" />
+    </radialGradient>
+    
+    <!-- Gradient for trunk -->
+    <linearGradient id="trunkGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8B4513;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#A0522D;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#CD853F;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Owl gradient -->
+    <linearGradient id="owlGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#9370DB;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#8A2BE2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4B0082;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Book gradients -->
+    <linearGradient id="book1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF1493;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FF69B4;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="book2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00BFFF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1E90FF;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="book3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FFA500;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="book4" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#32CD32;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00FF00;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Sparkle gradient -->
+    <radialGradient id="sparkle">
+      <stop offset="0%" style="stop-color:#FFF700;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#FFD700;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#FFA500;stop-opacity:0" />
+    </radialGradient>
+    
+    <!-- Glow filter -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="0.5" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Shadow filter -->
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="0.5" stdDeviation="0.5" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <!-- Background circle with soft gradient -->
+  <circle cx="16" cy="16" r="15.5" fill="#E6F3FF" opacity="0.3"/>
+  
+  <!-- Tree trunk with roots as pencils -->
+  <g filter="url(#shadow)">
+    <!-- Main trunk -->
+    <path d="M14 20 L14 26 L18 26 L18 20 Z" 
+          fill="url(#trunkGradient)" 
+          stroke="#6B4423" 
+          stroke-width="0.5"/>
+    
+    <!-- Pencil roots -->
+    <path d="M12 26 L14 28 M16 26 L16 28 M20 26 L18 28" 
+          stroke="#FFB347" 
+          stroke-width="1.5"
+          stroke-linecap="round"/>
+    
+    <!-- Pencil tips -->
+    <circle cx="14" cy="28" r="0.5" fill="#2B2B2B"/>
+    <circle cx="16" cy="28" r="0.5" fill="#2B2B2B"/>
+    <circle cx="18" cy="28" r="0.5" fill="#2B2B2B"/>
+  </g>
+  
+  <!-- Tree crown with colorful leaves -->
+  <g filter="url(#glow)">
+    <!-- Main tree shape -->
+    <ellipse cx="16" cy="14" rx="10" ry="9" 
+             fill="url(#treeGradient)" 
+             opacity="0.2"/>
+    
+    <!-- Book leaves - Layer 1 -->
+    <g transform="rotate(-15 16 14)">
+      <rect x="8" y="10" width="4" height="3" rx="0.5" fill="url(#book1)" filter="url(#shadow)"/>
+      <line x1="8.5" y1="11" x2="11.5" y2="11" stroke="white" stroke-width="0.3" opacity="0.7"/>
+      <line x1="8.5" y1="12" x2="11.5" y2="12" stroke="white" stroke-width="0.3" opacity="0.7"/>
+    </g>
+    
+    <g transform="rotate(25 16 14)">
+      <rect x="20" y="11" width="4" height="3" rx="0.5" fill="url(#book2)" filter="url(#shadow)"/>
+      <line x1="20.5" y1="12" x2="23.5" y2="12" stroke="white" stroke-width="0.3" opacity="0.7"/>
+      <line x1="20.5" y1="13" x2="23.5" y2="13" stroke="white" stroke-width="0.3" opacity="0.7"/>
+    </g>
+    
+    <!-- Book leaves - Layer 2 -->
+    <g transform="rotate(45 16 14)">
+      <rect x="14" y="6" width="4" height="3" rx="0.5" fill="url(#book3)" filter="url(#shadow)"/>
+      <line x1="14.5" y1="7" x2="17.5" y2="7" stroke="white" stroke-width="0.3" opacity="0.7"/>
+      <line x1="14.5" y1="8" x2="17.5" y2="8" stroke="white" stroke-width="0.3" opacity="0.7"/>
+    </g>
+    
+    <g transform="rotate(-45 16 14)">
+      <rect x="14" y="18" width="4" height="3" rx="0.5" fill="url(#book4)" filter="url(#shadow)"/>
+      <line x1="14.5" y1="19" x2="17.5" y2="19" stroke="white" stroke-width="0.3" opacity="0.7"/>
+      <line x1="14.5" y1="20" x2="17.5" y2="20" stroke="white" stroke-width="0.3" opacity="0.7"/>
+    </g>
+    
+    <!-- More colorful book leaves -->
+    <rect x="10" y="8" width="3.5" height="2.5" rx="0.4" fill="#FF6347" opacity="0.9" filter="url(#shadow)" transform="rotate(10 11.75 9.25)"/>
+    <rect x="18" y="7" width="3.5" height="2.5" rx="0.4" fill="#4169E1" opacity="0.9" filter="url(#shadow)" transform="rotate(-20 19.75 8.25)"/>
+    <rect x="13" y="15" width="3.5" height="2.5" rx="0.4" fill="#FF8C00" opacity="0.9" filter="url(#shadow)" transform="rotate(30 14.75 16.25)"/>
+    <rect x="17" y="16" width="3.5" height="2.5" rx="0.4" fill="#9ACD32" opacity="0.9" filter="url(#shadow)" transform="rotate(-10 18.75 17.25)"/>
+  </g>
+  
+  <!-- Wise Owl on branch -->
+  <g filter="url(#shadow)">
+    <!-- Branch -->
+    <path d="M12 17 L20 17" 
+          stroke="#8B4513" 
+          stroke-width="1.5"
+          stroke-linecap="round"/>
+    
+    <!-- Owl body -->
+    <ellipse cx="16" cy="16" rx="3" ry="3.5" 
+             fill="url(#owlGradient)"/>
+    
+    <!-- Owl wings -->
+    <ellipse cx="13.5" cy="16" rx="1.5" ry="2.5" 
+             fill="#8A2BE2" 
+             opacity="0.8"/>
+    <ellipse cx="18.5" cy="16" rx="1.5" ry="2.5" 
+             fill="#8A2BE2" 
+             opacity="0.8"/>
+    
+    <!-- Owl eyes with glasses -->
+    <circle cx="14.5" cy="15" r="1" fill="white"/>
+    <circle cx="17.5" cy="15" r="1" fill="white"/>
+    <circle cx="14.5" cy="15" r="0.5" fill="#2B2B2B"/>
+    <circle cx="17.5" cy="15" r="0.5" fill="#2B2B2B"/>
+    
+    <!-- Glasses -->
+    <path d="M13.5 15 Q14.5 14.5 15.5 15 M16.5 15 Q17.5 14.5 18.5 15" 
+          stroke="#FFD700" 
+          stroke-width="0.3"
+          fill="none"/>
+    <line x1="15.5" y1="15" x2="16.5" y2="15" 
+          stroke="#FFD700" 
+          stroke-width="0.3"/>
+    
+    <!-- Owl beak -->
+    <path d="M16 15.5 L15.5 16 L16.5 16 Z" 
+          fill="#FFA500"/>
+    
+    <!-- Owl feet -->
+    <path d="M14.5 18 L14.5 19 M15 18 L15 19 M17 18 L17 19 M17.5 18 L17.5 19" 
+          stroke="#FFA500" 
+          stroke-width="0.5"
+          stroke-linecap="round"/>
+  </g>
+  
+  <!-- Magical sparkles and stars -->
+  <g filter="url(#glow)">
+    <!-- Large sparkles -->
+    <g transform="translate(8, 6)">
+      <path d="M0 1 L1 0 L2 1 L1 2 Z" fill="url(#sparkle)"/>
+      <path d="M1 0 L1 2 M0 1 L2 1" stroke="#FFD700" stroke-width="0.3" opacity="0.8"/>
+    </g>
+    
+    <g transform="translate(24, 8)">
+      <path d="M0 1 L1 0 L2 1 L1 2 Z" fill="url(#sparkle)"/>
+      <path d="M1 0 L1 2 M0 1 L2 1" stroke="#FFD700" stroke-width="0.3" opacity="0.8"/>
+    </g>
+    
+    <g transform="translate(6, 18)">
+      <path d="M0 1 L1 0 L2 1 L1 2 Z" fill="url(#sparkle)"/>
+      <path d="M1 0 L1 2 M0 1 L2 1" stroke="#FFD700" stroke-width="0.3" opacity="0.8"/>
+    </g>
+    
+    <g transform="translate(25, 19)">
+      <path d="M0 1 L1 0 L2 1 L1 2 Z" fill="url(#sparkle)"/>
+      <path d="M1 0 L1 2 M0 1 L2 1" stroke="#FFD700" stroke-width="0.3" opacity="0.8"/>
+    </g>
+    
+    <!-- Small dots for extra magic -->
+    <circle cx="5" cy="10" r="0.5" fill="#FF69B4" opacity="0.8"/>
+    <circle cx="27" cy="12" r="0.5" fill="#00CED1" opacity="0.8"/>
+    <circle cx="9" cy="22" r="0.5" fill="#9370DB" opacity="0.8"/>
+    <circle cx="23" cy="23" r="0.5" fill="#32CD32" opacity="0.8"/>
+    <circle cx="11" cy="5" r="0.4" fill="#FFD700" opacity="0.9"/>
+    <circle cx="21" cy="6" r="0.4" fill="#FF1493" opacity="0.9"/>
+    
+    <!-- Floating letters/numbers for learning -->
+    <text x="7" y="14" font-family="Arial, sans-serif" font-size="2" fill="#FF6347" opacity="0.7" font-weight="bold">A</text>
+    <text x="25" y="15" font-family="Arial, sans-serif" font-size="2" fill="#4169E1" opacity="0.7" font-weight="bold">1</text>
+    <text x="4" y="24" font-family="Arial, sans-serif" font-size="2" fill="#32CD32" opacity="0.7" font-weight="bold">B</text>
+    <text x="27" y="25" font-family="Arial, sans-serif" font-size="2" fill="#9370DB" opacity="0.7" font-weight="bold">2</text>
+  </g>
+  
+  <!-- Magic glow around entire icon -->
+  <circle cx="16" cy="16" r="15" 
+          fill="none" 
+          stroke="url(#sparkle)" 
+          stroke-width="0.5" 
+          opacity="0.3"/>
+</svg>

@@ -17,9 +17,11 @@
       <div class="login-card bg-white/90 dark:bg-gray-800/90 backdrop-blur-lg rounded-3xl shadow-2xl border-2 border-blue-200 dark:border-blue-700 p-8 transform hover:scale-105 transition-all duration-500">
         <!-- Animated Logo and Brand -->
         <div class="text-center mb-8">
-          <div class="w-20 h-20 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4 logo-bounce shadow-xl">
-            <HandDrawnIcon name="graduation" size="xl" class="text-white transform rotate-12" />
-          </div>
+          <img 
+            src="/school-icon.svg" 
+            alt="MCGP School" 
+            class="w-20 h-20 mx-auto mb-4 logo-bounce drop-shadow-xl"
+          />
           <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-2 animated-text">
             {{ publicName || 'Loading...' }}
           </h1>

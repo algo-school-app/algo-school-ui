@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Background -->
+  <rect width="32" height="32" rx="4" fill="#4F46E5"/>
+  
+  <!-- Owl Face -->
+  <g transform="translate(16, 16)">
+    <!-- Body -->
+    <ellipse cx="0" cy="2" rx="8" ry="9" fill="white"/>
+    
+    <!-- Ears -->
+    <path d="M -8 -6 Q -8 -9 -5 -7 L -5 -2 Z" fill="white"/>
+    <path d="M 8 -6 Q 8 -9 5 -7 L 5 -2 Z" fill="white"/>
+    
+    <!-- Eyes (outer) -->
+    <circle cx="-3" cy="0" r="2.5" fill="#4F46E5"/>
+    <circle cx="3" cy="0" r="2.5" fill="#4F46E5"/>
+    
+    <!-- Eyes (inner - pupils) -->
+    <circle cx="-3" cy="0" r="1" fill="white"/>
+    <circle cx="3" cy="0" r="1" fill="white"/>
+    
+    <!-- Beak -->
+    <path d="M 0 2 L -1.5 4 L 0 5 L 1.5 4 Z" fill="#FCD34D"/>
+  </g>
+</svg>
