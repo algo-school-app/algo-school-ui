@@ -135,7 +135,7 @@
                     v-model="systemPrompt"
                     rows="20"
                     :placeholder="isToolMode 
-                      ? 'Enter instructions for how agents should use this tool...\n\nExample:\nYou are a file reading tool. When asked to read files:\n1. Check if the file path is valid\n2. Read the content safely\n3. Return the content or an error message'
+                      ? 'Enter instructions for how academics should use this tool...\n\nExample:\nYou are a file reading tool. When asked to read files:\n1. Check if the file path is valid\n2. Read the content safely\n3. Return the content or an error message'
                       : 'Enter the system prompt that defines this agent\'s behavior...\n\nExample:\nYou are a helpful teaching assistant for an educational platform. You should:\n1. Be patient and encouraging with students\n2. Provide clear explanations\n3. Ask follow-up questions to ensure understanding'"
                     class="w-full px-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none font-mono text-sm leading-relaxed"
                   ></textarea>

@@ -139,7 +139,7 @@ const loadAgents = async () => {
     isLoading.value = true
     const data = await agentAPIService.getAgents()
     agents.value = Array.isArray(data) ? data : []
-    console.log('Loaded agents:', agents.value)
+    console.log('Loaded academics:', agents.value)
   } catch (err) {
     showError(`Failed to load agents: ${err.message}`)
     agents.value = []

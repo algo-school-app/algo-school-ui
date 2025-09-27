@@ -243,7 +243,7 @@ const hasAgentsPermission = () => {
       )
     }
   } catch (error) {
-    console.error('Error checking agents permission:', error)
+    console.error('Error checking academics permission:', error)
   }
   return false
 }
