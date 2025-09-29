@@ -80,7 +80,8 @@
           r="2.5"
           :stroke="currentColor"
           stroke-width="1.5"
-          fill="none"
+          :fill="currentColor"
+          fill-opacity="0.25"
           class="wobbly-line"
         />
         <!-- Second person (right) -->
@@ -90,7 +91,8 @@
           r="2.5"
           :stroke="currentColor"
           stroke-width="1.5"
-          fill="none"
+          :fill="currentColor"
+          fill-opacity="0.25"
           class="wobbly-line"
         />
         <!-- Bodies -->
@@ -115,7 +117,7 @@
           stroke-linecap="round"
           stroke-linejoin="round"
           :fill="currentColor"
-          fill-opacity="0.15"
+          fill-opacity="0.3"
           class="wobbly-line"
         />
         <!-- Cap base/band -->
@@ -180,7 +182,8 @@
           stroke-width="1.5"
           stroke-linecap="round"
           stroke-linejoin="round"
-          fill="none"
+          :fill="currentColor"
+          fill-opacity="0.25"
           class="wobbly-line"
         />
         <path
@@ -257,7 +260,8 @@
           r="3"
           :stroke="currentColor"
           stroke-width="1.5"
-          fill="none"
+          :fill="currentColor"
+          fill-opacity="0.3"
           class="wobbly-line"
         />
         <path
@@ -304,7 +308,8 @@
           ry="2"
           :stroke="currentColor"
           stroke-width="1.5"
-          fill="none"
+          :fill="currentColor"
+          fill-opacity="0.25"
           class="wobbly-line"
         />
         <circle
@@ -428,7 +433,8 @@
           r="2"
           :stroke="currentColor"
           stroke-width="1.5"
-          fill="none"
+          :fill="currentColor"
+          fill-opacity="0.3"
           class="wobbly-line"
         />
         <circle
@@ -437,7 +443,8 @@
           r="2"
           :stroke="currentColor"
           stroke-width="1.5"
-          fill="none"
+          :fill="currentColor"
+          fill-opacity="0.3"
           class="wobbly-line"
         />
         <path
@@ -539,7 +546,8 @@
           r="4"
           :stroke="currentColor"
           stroke-width="1.5"
-          fill="none"
+          :fill="currentColor"
+          fill-opacity="0.25"
           class="wobbly-line"
         />
         <path
@@ -1136,7 +1144,7 @@
           :stroke="currentColor"
           stroke-width="1.5"
           :fill="currentColor"
-          fill-opacity="0.1"
+          fill-opacity="0.25"
           class="wobbly-line"
         />
         
@@ -1175,6 +1183,157 @@
           :fill="currentColor" fill-opacity="0.7" />
         <path d="M17 7 L17.3 6.5 L17.5 7 L17.3 7.5 Z" 
           :fill="currentColor" fill-opacity="0.7" />
+      </g>
+
+      <!-- Room Icon (Room interior view for Rooms submenu) -->
+      <g v-else-if="name === 'room'" class="hand-drawn-path">
+        <!-- Room walls (3D perspective) -->
+        <path
+          d="M4 4 L20 4 L20 20 L4 20 Z"
+          :stroke="currentColor"
+          stroke-width="1.5"
+          :fill="currentColor"
+          fill-opacity="0.15"
+          class="wobbly-line"
+        />
+        <!-- Back wall -->
+        <rect
+          x="6"
+          y="6"
+          width="12"
+          height="10"
+          :stroke="currentColor"
+          stroke-width="1.5"
+          :fill="currentColor"
+          fill-opacity="0.25"
+          class="wobbly-line"
+        />
+        <!-- Floor perspective lines -->
+        <path
+          d="M4 20 L6 16"
+          :stroke="currentColor"
+          stroke-width="1"
+          stroke-opacity="0.5"
+          class="wobbly-line"
+        />
+        <path
+          d="M20 20 L18 16"
+          :stroke="currentColor"
+          stroke-width="1"
+          stroke-opacity="0.5"
+          class="wobbly-line"
+        />
+        <!-- Window on back wall -->
+        <rect
+          x="8"
+          y="8"
+          width="3"
+          height="3"
+          :stroke="currentColor"
+          stroke-width="1"
+          :fill="currentColor"
+          fill-opacity="0.4"
+        />
+        <!-- Door on right wall -->
+        <path
+          d="M15 11 L15 16 L17 16 L17 13"
+          :stroke="currentColor"
+          stroke-width="1.5"
+          :fill="currentColor"
+          fill-opacity="0.3"
+          class="wobbly-line"
+        />
+        <!-- Door handle -->
+        <circle
+          cx="16"
+          cy="14"
+          r="0.3"
+          :fill="currentColor"
+        />
+      </g>
+
+      <!-- Location Bubble Icon (Map Pin/Marker for Locations Main Menu) -->
+      <g v-else-if="name === 'location'" class="hand-drawn-path">
+        <!-- Location pin outer shape -->
+        <path
+          d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"
+          :stroke="currentColor"
+          stroke-width="1.5"
+          :fill="currentColor"
+          fill-opacity="0.25"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="wobbly-line"
+        />
+        <!-- Inner circle (center point) -->
+        <circle
+          cx="12"
+          cy="9"
+          r="2.5"
+          :stroke="currentColor"
+          stroke-width="1.5"
+          :fill="currentColor"
+          fill-opacity="0.5"
+          class="wobbly-line"
+        />
+      </g>
+
+      <!-- Building Icon (Generic Building for Locations) -->
+      <g v-else-if="name === 'building'" class="hand-drawn-path">
+        <!-- Main building structure -->
+        <rect
+          x="6"
+          y="6"
+          width="12"
+          height="12"
+          rx="1"
+          ry="1"
+          :stroke="currentColor"
+          stroke-width="1.5"
+          :fill="currentColor"
+          fill-opacity="0.25"
+          class="wobbly-line"
+        />
+        <!-- Roof/Top -->
+        <path
+          d="M4 6h16"
+          :stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          fill="none"
+          class="wobbly-line"
+        />
+        <!-- Windows - Grid pattern -->
+        <rect x="8" y="8" width="2" height="2" :fill="currentColor" fill-opacity="0.6" />
+        <rect x="11" y="8" width="2" height="2" :fill="currentColor" fill-opacity="0.6" />
+        <rect x="14" y="8" width="2" height="2" :fill="currentColor" fill-opacity="0.6" />
+        <rect x="8" y="12" width="2" height="2" :fill="currentColor" fill-opacity="0.6" />
+        <rect x="11" y="12" width="2" height="2" :fill="currentColor" fill-opacity="0.6" />
+        <rect x="14" y="12" width="2" height="2" :fill="currentColor" fill-opacity="0.6" />
+        <!-- Door -->
+        <rect
+          x="10"
+          y="14"
+          width="4"
+          height="4"
+          :stroke="currentColor"
+          stroke-width="1.5"
+          fill="none"
+          class="wobbly-line"
+        />
+        <!-- Door handle -->
+        <circle cx="11.5" cy="16" r="0.3" :fill="currentColor" />
+        <!-- Foundation line -->
+        <path
+          d="M3 18h18"
+          :stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          fill="none"
+          class="wobbly-line"
+        />
       </g>
 
       <!-- School Building Icon (Education Institution) -->

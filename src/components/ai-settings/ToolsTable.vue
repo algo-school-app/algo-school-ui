@@ -129,15 +129,15 @@
               {{ formatDate(tool.updated_at) }}
             </td>
             <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm font-medium">
-              <div class="flex items-center gap-3">
-                <button @click="editTool(tool)" class="p-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all duration-200 hover:scale-110 hover:-translate-y-1" title="Edit">
-                  <HandDrawnIcon name="edit" size="sm" />
+              <div class="flex items-center gap-2">
+                <button @click="viewSystemPrompt(tool)" class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300" title="View System Prompt">
+                  <i class="fas fa-eye"></i>
                 </button>
-                <button @click="viewSystemPrompt(tool)" class="p-2 text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-all duration-200 hover:scale-110 hover:-translate-y-1" title="View System Prompt">
-                  <HandDrawnIcon name="eye" size="sm" />
+                <button @click="editTool(tool)" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300" title="Edit">
+                  <i class="fas fa-edit"></i>
                 </button>
-                <button @click="deleteTool(tool)" class="p-2 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200 hover:scale-110 hover:-translate-y-1" title="Delete">
-                  <HandDrawnIcon name="trash" size="sm" />
+                <button @click="deleteTool(tool)" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300" title="Delete">
+                  <i class="fas fa-trash"></i>
                 </button>
               </div>
             </td>
@@ -211,7 +211,6 @@ import { agentAPIService } from '../../services/agentAPIService.js'
 import ToolModal from './ToolModal.vue'
 import SystemPromptModal from './SystemPromptModal.vue'
 import ConfirmationDialog from '../ConfirmationDialog.vue'
-import HandDrawnIcon from '../HandDrawnIcon.vue'
 
 const props = defineProps({
   tools: {

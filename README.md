@@ -103,8 +103,16 @@ See [DOCKER.md](./DOCKER.md) for detailed Docker configuration and troubleshooti
 algo-school-ui/
 ├── src/
 │   ├── components/          # Vue components
+│   │   ├── locations/       # Physical locations components
+│   │   │   ├── BuildingsList.vue
+│   │   │   ├── BuildingModal.vue
+│   │   │   ├── BuildingDetails.vue
+│   │   │   └── RoomModal.vue
+│   │   └── ...             # Other components
 │   ├── views/              # Page-level components
 │   ├── services/           # API and business logic
+│   │   ├── locationService.js # Physical locations API client
+│   │   └── ...             # Other services
 │   ├── stores/             # State management
 │   ├── utils/              # Helper utilities
 │   ├── assets/             # Static assets
@@ -151,6 +159,24 @@ VITE_DEBUG=true
 - Client identification via domain or headers (`algo-client-id`, `algo-tenant-id`)
 - Tenant-specific branding and themes
 - Isolated data access with Supabase RLS policies
+
+### Physical Locations Management
+- Building and room management interface
+- Shared infrastructure with multi-tenant booking capabilities
+- Real-time capacity and availability tracking
+- Permission-based access control for location management
+- Simplified amenities/features management using enum arrays
+- Fixed "Available" room count calculation (uses is_active field)
+- API-level "Active Only" filtering implementation
+
+### Classes & Academic Management
+- Hierarchical academic structure: Programs → Courses → Classes
+- Dual class menu system:
+  - Administrative "Classes" (TeacherAssignments) with explicit permissions
+  - Dynamic "My Classes" based on user profile data (no explicit permissions)
+- Multi-tenant class assignments and enrollments
+- Teacher and student management per class
+- Document association with courses and classes
 
 ### UI/UX Features
 - Responsive design with mobile-first approach

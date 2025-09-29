@@ -165,12 +165,15 @@
               {{ formatDate(relationship.created_at) }}
             </td>
             <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm font-medium">
-              <div class="flex items-center gap-3">
-                <button @click="editRelationship(relationship)" class="p-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all duration-200 hover:scale-110 hover:-translate-y-1" title="Edit">
-                  <HandDrawnIcon name="edit" size="sm" />
+              <div class="flex items-center gap-2">
+                <button @click="viewRelationship(relationship)" class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300" title="View Details">
+                  <i class="fas fa-eye"></i>
                 </button>
-                <button @click="deleteRelationship(relationship)" class="p-2 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200 hover:scale-110 hover:-translate-y-1" title="Delete">
-                  <HandDrawnIcon name="trash" size="sm" />
+                <button @click="editRelationship(relationship)" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300" title="Edit">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button @click="deleteRelationship(relationship)" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300" title="Delete">
+                  <i class="fas fa-trash"></i>
                 </button>
               </div>
             </td>
@@ -236,7 +239,6 @@ import { ref, computed, watch } from 'vue'
 import { agentAPIService } from '../../services/agentAPIService.js'
 import AgentToolModal from './AgentToolModal.vue'
 import ConfirmationDialog from '../ConfirmationDialog.vue'
-import HandDrawnIcon from '../HandDrawnIcon.vue'
 
 const props = defineProps({
   relationships: {
@@ -388,6 +390,12 @@ const adjustPriority = async (relationship, direction) => {
   } catch (error) {
     console.error('Error updating priority:', error)
   }
+}
+
+const viewRelationship = (relationship) => {
+  console.log('Viewing agent-tool relationship:', relationship)
+  // TODO: Implement view functionality - could show details in modal or navigate to detail page
+  toast.info('Coming Soon', 'Relationship details view will be implemented soon')
 }
 
 const editRelationship = (relationship) => {

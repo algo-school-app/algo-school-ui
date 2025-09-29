@@ -13,7 +13,7 @@
           </div>
         </div>
         <button @click="editFamily" class="px-3 sm:px-4 py-1.5 sm:py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all duration-200 hover:scale-105 hover:-translate-y-0.5 flex items-center gap-1 sm:gap-2 text-sm sm:text-base">
-          <HandDrawnIcon name="edit" size="sm" class="text-white" />
+          <i class="fas fa-edit"></i>
           <span class="hidden sm:inline">Edit Family</span>
           <span class="sm:hidden">Edit</span>
         </button>
@@ -149,7 +149,6 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { supabase } from '../services/supabase.js'
 import { useToast } from '../utils/useToast.js'
-import HandDrawnIcon from './HandDrawnIcon.vue'
 
 const router = useRouter()
 const route = useRoute()

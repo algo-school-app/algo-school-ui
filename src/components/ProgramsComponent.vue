@@ -114,18 +114,21 @@
               </div>
             </div>
             
-            <div class="flex items-center justify-end gap-1 sm:gap-2">
+            <div class="flex items-center justify-end gap-2">
+              <!-- View Button -->
+              <button @click.stop="viewProgram(program)" class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300" title="View Details">
+                <i class="fas fa-eye"></i>
+              </button>
+
               <!-- Edit Button - Only show if user has permission -->
-              <button v-if="canEditPrograms()" @click.stop="editProgram(program)" class="p-2 text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-all duration-200 hover:scale-110 hover:-translate-y-1" title="Edit">
-                <HandDrawnIcon name="edit" size="sm" />
+              <button v-if="canEditPrograms()" @click.stop="editProgram(program)" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300" title="Edit">
+                <i class="fas fa-edit"></i>
               </button>
-              
+
               <!-- Delete Button - Only show if user has permission -->
-              <button v-if="canDeletePrograms()" @click.stop="deleteProgram(program)" class="p-2 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200 hover:scale-110 hover:-translate-y-1" title="Delete">
-                <HandDrawnIcon name="trash" size="sm" />
+              <button v-if="canDeletePrograms()" @click.stop="deleteProgram(program)" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300" title="Delete">
+                <i class="fas fa-trash"></i>
               </button>
-              
-              <!-- View Button removed completely as requested -->
             </div>
           </div>
         </div>
@@ -200,7 +203,6 @@ import { ref, computed, onMounted } from 'vue'
 import { supabase } from '../services/supabase.js'
 import { useToast } from '../utils/useToast.js'
 import ConfirmationDialog from './ConfirmationDialog.vue'
-import HandDrawnIcon from './HandDrawnIcon.vue'
 import { UserService } from '../services/userService.js'
 
 // Reactive data

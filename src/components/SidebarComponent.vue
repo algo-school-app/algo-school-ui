@@ -34,12 +34,14 @@
         <button @click="selectMenu(item.id)"
                 class="w-full flex items-center px-3 py-3 sm:py-2 text-sm font-medium rounded-lg transition-all duration-200 touch-manipulation"
                 :class="[
-                  selectedMenu === item.id 
-                    ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' 
+                  selectedMenu === item.id
+                    ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
                     : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800',
                   props.isMobile ? 'text-base' : 'hover:scale-105 hover:-translate-y-0.5'
                 ]">
-          <HandDrawnIcon :name="item.icon" size="lg" class="flex-shrink-0" />
+          <div class="flex items-center justify-center w-6 h-6 flex-shrink-0">
+            <HandDrawnIcon :name="item.icon" size="md" />
+          </div>
           <span v-if="!isCollapsed || props.isMobile" class="ml-3 flex-1 text-left">{{ item.label }}</span>
           <HandDrawnIcon v-if="item.submenu && !isCollapsed && !props.isMobile" 
                          :name="expandedMenus.includes(item.id) ? 'arrow-down' : 'arrow-right'" 
@@ -63,18 +65,20 @@
                'ml-4': !isCollapsed || props.isMobile,
                'ml-0': isCollapsed && !props.isMobile 
              }">
-          <button v-for="subItem in item.submenu" 
+          <button v-for="subItem in item.submenu"
                   :key="subItem.id"
                   @click="selectMenu(subItem.id)"
                   class="w-full flex items-center px-3 py-3 sm:py-2 text-sm font-medium rounded-lg transition-all duration-200 touch-manipulation"
                   :class="[
-                    selectedMenu === subItem.id 
-                      ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' 
+                    selectedMenu === subItem.id
+                      ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
                       : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800',
                     { 'justify-center': isCollapsed && !props.isMobile },
                     props.isMobile ? 'text-base' : 'hover:scale-105 hover:-translate-y-0.5'
                   ]">
-            <HandDrawnIcon :name="subItem.icon" size="sm" class="flex-shrink-0" />
+            <div class="flex items-center justify-center w-5 h-5 flex-shrink-0">
+              <HandDrawnIcon :name="subItem.icon" size="sm" />
+            </div>
             <span v-if="!isCollapsed || props.isMobile" class="ml-3 truncate">{{ subItem.label }}</span>
           </button>
         </div>
@@ -88,12 +92,14 @@
           <button @click="selectMenu(item.id)"
                   class="w-full flex items-center px-3 py-3 sm:py-2 text-sm font-medium rounded-lg mb-1 transition-all duration-200 touch-manipulation"
                   :class="[
-                    selectedMenu === item.id 
-                      ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' 
+                    selectedMenu === item.id
+                      ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
                       : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800',
                     props.isMobile ? 'text-base' : 'hover:scale-105 hover:-translate-y-0.5'
                   ]">
-            <HandDrawnIcon :name="item.icon" size="md" class="flex-shrink-0" />
+            <div class="flex items-center justify-center w-6 h-6 flex-shrink-0">
+              <HandDrawnIcon :name="item.icon" size="md" />
+            </div>
             <span v-if="!isCollapsed || props.isMobile" class="ml-3">{{ item.label }}</span>
           </button>
         </div>
@@ -181,9 +187,9 @@ const mainMenuItems = computed(() => {
   }
   
   items.push(
-    { 
-      id: 'AcademicSetup', 
-      label: 'Academic Setup', 
+    {
+      id: 'AcademicSetup',
+      label: 'Academic Setup',
       icon: 'cogs',
       submenu: [
         { id: 'AcademicYears', label: 'Academic Years', icon: 'calendar' },
@@ -193,7 +199,7 @@ const mainMenuItems = computed(() => {
         { id: 'TeacherAssignments', label: 'Classes', icon: 'user' }
       ]
     },
-    { 
+    {
       id: 'Users', 
       label: 'Users', 
       icon: 'group-users',
@@ -204,7 +210,20 @@ const mainMenuItems = computed(() => {
       ]
     }
   )
-  
+
+  // Add Locations if user has permission
+  if (hasLocationPermission() || hasSuperAdminPermission()) {
+    items.push({
+      id: 'Locations',
+      label: 'Locations',
+      icon: 'location',
+      submenu: [
+        { id: 'Buildings', label: 'Buildings', icon: 'building' },
+        { id: 'Rooms', label: 'Rooms', icon: 'room' }
+      ]
+    })
+  }
+
   // Only add My Classes if user has classes
   if (userClasses.length > 0) {
     items.push({
@@ -229,6 +248,21 @@ const hasSuperAdminPermission = () => {
     }
   } catch (error) {
     console.error('Error checking super admin permission:', error)
+  }
+  return false
+}
+
+// Check if user has location permissions
+const hasLocationPermission = () => {
+  try {
+    const profile = UserService.getStoredProfile()
+    if (profile && profile.permissions && Array.isArray(profile.permissions)) {
+      return profile.permissions.some(permission =>
+        (permission.name.startsWith('locations_') || permission.name === 'super_admin') && permission.is_active
+      )
+    }
+  } catch (error) {
+    console.error('Error checking location permission:', error)
   }
   return false
 }
@@ -312,6 +346,9 @@ const selectMenu = (menuId) => {
     'Students': 'students',
     'Parents': 'parents',
     'Staff': 'staff',
+    'Buildings': 'buildings',
+    'Rooms': 'rooms',
+    'Locations': 'locations',
     'RolePermissions': 'auth',
     'Profile': 'profile',
     'AISettings': 'ai-settings',

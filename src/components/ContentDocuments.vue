@@ -186,7 +186,7 @@
                       class="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors flex items-center gap-2 text-sm font-medium"
                       title="Delete"
                     >
-                      <HandDrawnIcon name="trash" size="xs" />
+                      <i class="fas fa-trash"></i>
                       <span>Delete</span>
                     </button>
                   </div>
@@ -345,7 +345,6 @@ import { ref, computed, onMounted } from 'vue'
 import { supabase } from '../services/supabase.js'
 import { UserService } from '../services/userService.js'
 import ConfirmationDialog from './ConfirmationDialog.vue'
-import HandDrawnIcon from './HandDrawnIcon.vue'
 
 const props = defineProps({
   classId: [String, Number],

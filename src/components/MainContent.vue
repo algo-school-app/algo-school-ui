@@ -98,6 +98,21 @@
       <ProgramsComponent />
     </div>
 
+    <!-- Buildings Management -->
+    <div v-else-if="selectedMenu === 'Buildings'" class="h-full">
+      <Buildings />
+    </div>
+
+    <!-- Rooms Management -->
+    <div v-else-if="selectedMenu === 'Rooms'" class="h-full">
+      <Rooms />
+    </div>
+
+    <!-- Locations Management (fallback for old routes) -->
+    <div v-else-if="selectedMenu === 'Locations'" class="h-full">
+      <Buildings />
+    </div>
+
     <!-- Teacher Assignments -->
     <div v-else-if="selectedMenu === 'TeacherAssignments'" class="flex-1 content-section overflow-y-auto">
       <div class="p-3 sm:p-6">
@@ -320,6 +335,9 @@ import RolePermissionComponent from './RolePermissionComponent.vue'
 import AISettingsComponent from './AISettingsComponent.vue'
 import SettingsComponent from './SettingsComponent.vue'
 import ClassComponent from './ClassComponent.vue'
+import BuildingsList from './locations/BuildingsList.vue'
+import Buildings from '@/views/locations/Buildings.vue'
+import Rooms from '@/views/locations/Rooms.vue'
 import HandDrawnIcon from './HandDrawnIcon.vue'
 
 const props = defineProps({

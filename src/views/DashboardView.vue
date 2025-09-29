@@ -297,7 +297,10 @@ const menuMap = {
   'profile': 'Profile',
   'settings': 'Settings',
   'auth': 'RolePermissions',
-  'ai-settings': 'AISettings'
+  'ai-settings': 'AISettings',
+  'locations': 'Locations',
+  'buildings': 'Buildings',
+  'rooms': 'Rooms'
 }
 
 // Watch for route changes
