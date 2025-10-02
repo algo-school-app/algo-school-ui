@@ -290,15 +290,16 @@ const clearCache = () => {
   // Clear application cache
   try {
     // Clear specific application data but preserve user settings
-    const keysToKeep = ['algo_theme', 'algo_notifications', 'algo_language', 'algo_timezone', 'algo_session_timeout', 'algo_2fa_enabled', 'algo_user', 'algo_user_profile', 'algo_token']
+    // Note: algo_token no longer included as Supabase manages session tokens
+    const keysToKeep = ['algo_theme', 'algo_notifications', 'algo_language', 'algo_timezone', 'algo_session_timeout', 'algo_2fa_enabled', 'algo_user', 'algo_user_profile']
     const allKeys = Object.keys(localStorage)
-    
+
     allKeys.forEach(key => {
       if (!keysToKeep.includes(key)) {
         localStorage.removeItem(key)
       }
     })
-    
+
     showToast('Cache cleared successfully!', 'success')
   } catch (error) {
     showToast('Failed to clear cache', 'error')

@@ -27,7 +27,7 @@
               <MenuButton class="flex items-center text-xs sm:text-sm rounded-full bg-gray-100 dark:bg-gray-700 px-2 sm:px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 touch-manipulation">
                 <HandDrawnIcon name="graduation" size="xs" class="text-gray-600 dark:text-gray-300 mr-1 sm:mr-2" />
                 <span class="text-gray-700 dark:text-gray-200 hidden sm:inline max-w-24 lg:max-w-none truncate">{{ currentTenant }}</span>
-                <span class="text-gray-700 dark:text-gray-200 sm:hidden max-w-16 truncate">{{ currentTenant.split(' ')[0] }}</span>
+                <span class="text-gray-700 dark:text-gray-200 sm:hidden max-w-16 truncate">{{ currentTenant ? currentTenant.split(' ')[0] : '' }}</span>
                 <i class="fas fa-chevron-down text-gray-400 ml-1 sm:ml-2 text-xs"></i>
               </MenuButton>
               <transition
@@ -172,7 +172,7 @@
               <MenuButton class="w-full flex items-center justify-between text-xs rounded-full bg-gray-100 dark:bg-gray-700 px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 touch-manipulation">
                 <div class="flex items-center">
                   <HandDrawnIcon name="book" size="xs" class="text-gray-600 dark:text-gray-300 mr-2" />
-                  <span class="text-gray-700 dark:text-gray-200 truncate">{{ currentAcademicYear.split(' ')[0] }}</span>
+                  <span class="text-gray-700 dark:text-gray-200 truncate">{{ currentAcademicYear ? currentAcademicYear.split(' ')[0] : '' }}</span>
                 </div>
                 <i class="fas fa-chevron-down text-gray-400 ml-2 text-xs"></i>
               </MenuButton>
@@ -292,6 +292,7 @@ const menuMap = {
   'academic-year': 'AcademicYear',
   'program-courses': 'ProgramCourses',
   'courses': 'AllCourses',
+  'classes': 'TeacherAssignments',
   'course-categories': 'CourseCategories',
   'course-enrollments': 'CourseEnrollments',
   'profile': 'Profile',
@@ -508,7 +509,7 @@ const switchAcademicYear = (academicYearId) => {
 
 const logout = async () => {
   try {
-    // Sign out from Supabase first
+    // Sign out from Supabase first - this clears the session and tokens
     const { error } = await supabase.auth.signOut()
     if (error) {
       console.error('Error signing out from Supabase:', error)
@@ -516,16 +517,16 @@ const logout = async () => {
   } catch (error) {
     console.error('Error during logout:', error)
   }
-  
+
   // Clear all authentication-related localStorage items
   localStorage.removeItem('algo_user')
   localStorage.removeItem('algo_user_profile')
-  localStorage.removeItem('algo_token')
   localStorage.removeItem('algo_session_time')
   localStorage.removeItem('algo_current_tenant')
   localStorage.removeItem('algo_current_academic_year')
   localStorage.removeItem('algo_chat_session')
-  
+  // Note: algo_token no longer manually stored - Supabase manages session tokens
+
   // Redirect to login
   router.push('/login')
 }

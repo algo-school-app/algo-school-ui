@@ -242,8 +242,8 @@ const hasSuperAdminPermission = () => {
   try {
     const profile = UserService.getStoredProfile()
     if (profile && profile.permissions && Array.isArray(profile.permissions)) {
-      return profile.permissions.some(permission => 
-        permission.name === 'super_admin' && permission.is_active
+      return profile.permissions.some(permission =>
+        permission && permission.name === 'super_admin' && permission.is_active
       )
     }
   } catch (error) {
@@ -258,7 +258,9 @@ const hasLocationPermission = () => {
     const profile = UserService.getStoredProfile()
     if (profile && profile.permissions && Array.isArray(profile.permissions)) {
       return profile.permissions.some(permission =>
-        (permission.name.startsWith('locations_') || permission.name === 'super_admin') && permission.is_active
+        permission && permission.name &&
+        (permission.name.startsWith('locations_') || permission.name === 'super_admin') &&
+        permission.is_active
       )
     }
   } catch (error) {
@@ -272,8 +274,10 @@ const hasAgentsPermission = () => {
   try {
     const profile = UserService.getStoredProfile()
     if (profile && profile.permissions && Array.isArray(profile.permissions)) {
-      return profile.permissions.some(permission => 
-        permission.name.startsWith('agents_') && permission.is_active
+      return profile.permissions.some(permission =>
+        permission && permission.name &&
+        permission.name.startsWith('agents_') &&
+        permission.is_active
       )
     }
   } catch (error) {

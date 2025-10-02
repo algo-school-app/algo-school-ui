@@ -523,8 +523,8 @@ const loadBuildingTypes = async () => {
     buildingTypes.value = await locationService.getBuildingTypes()
   } catch (error) {
     console.error('Failed to load building types:', error)
-    // Use fallback values
-    buildingTypes.value = locationService.getFallbackBuildingTypes()
+    // No fallback - let it fail properly
+    buildingTypes.value = []
   } finally {
     loadingBuildingTypes.value = false
   }

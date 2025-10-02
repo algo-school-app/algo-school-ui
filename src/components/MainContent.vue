@@ -113,30 +113,9 @@
       <Buildings />
     </div>
 
-    <!-- Teacher Assignments -->
-    <div v-else-if="selectedMenu === 'TeacherAssignments'" class="flex-1 content-section overflow-y-auto">
-      <div class="p-3 sm:p-6">
-        <div class="max-w-6xl mx-auto">
-          <div class="page-header mb-4 sm:mb-8">
-            <HandDrawnIcon name="user" size="lg" class="text-purple-500 mb-4" />
-            <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">Teacher Assignments</h1>
-            <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400">Manage teacher assignments and class allocations</p>
-          </div>
-          <div class="enhanced-card bg-gradient-to-br from-white to-purple-50/30 dark:from-gray-800 dark:to-purple-900/10 rounded-lg sm:rounded-2xl shadow-lg border border-purple-200/50 dark:border-purple-700/30 p-4 sm:p-6 lg:p-8 hover:shadow-xl transition-all duration-300">
-            <div class="text-center">
-              <div class="w-16 h-16 bg-gradient-to-br from-purple-400 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4 icon-pulse">
-                <HandDrawnIcon name="user" size="lg" class="text-white" />
-              </div>
-              <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">Teacher Assignment Management</h3>
-              <p class="text-gray-600 dark:text-gray-400 mb-6">Assign teachers to classes, manage teaching schedules, and optimize class allocations with intelligent assignment tools.</p>
-              <div class="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-sm font-medium">
-                <span class="animate-pulse">👩‍🏫</span>
-                Coming Soon
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+    <!-- Classes Management -->
+    <div v-else-if="selectedMenu === 'TeacherAssignments'" class="h-full">
+      <ClassesList />
     </div>
 
 
@@ -335,6 +314,7 @@ import RolePermissionComponent from './RolePermissionComponent.vue'
 import AISettingsComponent from './AISettingsComponent.vue'
 import SettingsComponent from './SettingsComponent.vue'
 import ClassComponent from './ClassComponent.vue'
+import ClassesList from './classes/ClassesList.vue'
 import BuildingsList from './locations/BuildingsList.vue'
 import Buildings from '@/views/locations/Buildings.vue'
 import Rooms from '@/views/locations/Rooms.vue'

@@ -409,15 +409,19 @@ const handleSubmit = async () => {
     if (authError) {
       throw authError
     }
-    if (!data || !data.user) {
+    if (!data || !data.user || !data.session) {
       throw new Error('Invalid authentication response from Supabase')
     }
+
+    // Note: Token is automatically managed by Supabase session storage
+    // No need to manually store it in localStorage
+    console.log('LoginComponent: Authentication successful, Supabase managing session')
 
     // Step 2: Get complete user profile from database
     try {
       const profileData = await UserService.loadUserProfile()
       console.log('LoginComponent: Profile data loaded and stored successfully')
-      
+
       // Check if user has tenant access - multiple scenarios
       if (hasTenantAccessIssue(profileData)) {
         console.warn('LoginComponent: User has no tenant access')
@@ -425,10 +429,10 @@ const handleSubmit = async () => {
         showTenantAccessDialog.value = true
         return // Stop the login process
       }
-      
+
     } catch (profileErr) {
       console.warn('LoginComponent: Profile loading failed:', profileErr)
-      
+
       // Check if the error is related to tenant access
       if (profileErr.message && (
         profileErr.message.includes('User has no access to any tenants') ||
@@ -440,7 +444,7 @@ const handleSubmit = async () => {
         showTenantAccessDialog.value = true
         return // Stop the login process
       }
-      
+
       // For other errors, continue with basic user data from authentication
       const basicUserData = {
         id: data.user.id,
@@ -454,7 +458,6 @@ const handleSubmit = async () => {
 
     // Step 3: Store session information
     localStorage.setItem('algo_session_time', new Date().toISOString())
-    localStorage.setItem('algo_token', 'authenticated')
     
     // Step 4: Trigger celebration confetti explosion! 🎊
     loginSuccess.value = true // Change button text to celebration mode
@@ -515,9 +518,9 @@ const closeTenantAccessDialog = () => {
   tenantAccessError.value = ''
   // Clear any stored session data since user doesn't have access
   localStorage.removeItem('algo_session_time')
-  localStorage.removeItem('algo_token')
   localStorage.removeItem('algo_user')
   localStorage.removeItem('algo_user_profile')
+  // Note: Supabase session will be cleared by signOut if needed
 }
 
 const informAdmin = () => {
@@ -600,12 +603,17 @@ onMounted(async () => {
       
       if (session && session.user) {
         console.log('Session established, user ID:', session.user.id)
-        
+
+        // Note: Token is automatically managed by Supabase session storage
+        // No need to manually store it in localStorage
+        console.log('OAuth: Authentication successful, Supabase managing session')
+        localStorage.setItem('algo_session_time', new Date().toISOString())
+
         // Use UserService to load profile (same as regular login)
         try {
           const profileData = await UserService.loadUserProfile()
           console.log('OAuth: Profile data loaded and stored successfully')
-          
+
           // Check if user has tenant access - multiple scenarios
           if (hasTenantAccessIssue(profileData)) {
             console.warn('OAuth: User has no tenant access')
@@ -616,10 +624,10 @@ onMounted(async () => {
             window.history.replaceState(null, '', window.location.pathname)
             return // Stop the login process
           }
-          
+
         } catch (profileErr) {
           console.error('OAuth: Profile loading failed:', profileErr)
-          
+
           // Check if the error is related to tenant access
           if (profileErr.message && (
             profileErr.message.includes('User has no access to any tenants') ||
@@ -634,17 +642,13 @@ onMounted(async () => {
             window.history.replaceState(null, '', window.location.pathname)
             return // Stop the login process
           }
-          
+
           // For other errors, throw to be caught by outer try-catch
           throw profileErr
         }
-        
+
         // Clear the hash from URL
         window.history.replaceState(null, '', window.location.pathname)
-        
-        // Store session information (same as regular login)
-        localStorage.setItem('algo_session_time', new Date().toISOString())
-        localStorage.setItem('algo_token', 'authenticated')
         
         // Trigger celebration confetti explosion! 🎊
         loginSuccess.value = true

@@ -2,25 +2,52 @@ import { supabase } from './supabase.js'
 
 /**
  * User Service for handling user profile data and authentication
- * 
+ *
  * OPTIMIZATION: This service prioritizes using stored data to avoid unnecessary API calls.
  * Data is loaded once during login and reused throughout the application.
+ *
+ * Now uses REST API endpoint /v1/user instead of Supabase RPC calls.
+ * Authentication tokens are managed by Supabase session management.
  */
 export class UserService {
-  
+
   /**
    * Load complete user profile with tenant and permissions
    */
   static async loadUserProfile() {
     try {
       console.log('UserService: Loading complete user profile...')
-      
-      const { data, error } = await supabase.rpc('algo_get_user_profile')
-      
-      if (error) {
-        console.error('UserService: Error loading user profile:', error)
-        throw error
+
+      // Get auth token from Supabase session (single source of truth)
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+
+      if (sessionError) {
+        throw new Error(`Failed to get session: ${sessionError.message}`)
       }
+
+      if (!session || !session.access_token) {
+        throw new Error('No authentication session found')
+      }
+
+      const token = session.access_token
+
+      // Call the new REST API endpoint instead of RPC
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8001'
+      const response = await fetch(`${apiUrl}/v1/user`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        console.error('UserService: Error loading user profile:', errorData)
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
       
       if (data && data.success) {
         console.log('UserService: Profile loaded successfully:', data)
@@ -91,16 +118,16 @@ export class UserService {
     localStorage.removeItem('algo_user')
     localStorage.removeItem('algo_user_profile')
     localStorage.removeItem('algo_session_time')
-    localStorage.removeItem('algo_token')
+    // Note: algo_token is no longer manually stored - Supabase manages session tokens
   }
-  
+
   /**
    * Check if user is authenticated
+   * Uses Supabase session as the source of truth
    */
-  static isAuthenticated() {
-    const user = this.getStoredUser()
-    const token = localStorage.getItem('algo_token')
-    return !!(user && token)
+  static async isAuthenticated() {
+    const { data: { session } } = await supabase.auth.getSession()
+    return !!(session && session.user)
   }
   
   /**
@@ -120,14 +147,18 @@ export class UserService {
   
   /**
    * Get session information
+   * Note: Token is now managed by Supabase and retrieved via getSession()
    */
-  static getSessionInfo() {
+  static async getSessionInfo() {
+    const { data: { session } } = await supabase.auth.getSession()
+
     return {
       sessionTime: localStorage.getItem('algo_session_time'),
-      token: localStorage.getItem('algo_token'),
+      token: session?.access_token || null,
       user: this.getStoredUser(),
       profile: this.getStoredProfile(),
-      userId: this.getUserId()
+      userId: this.getUserId(),
+      supabaseSession: session
     }
   }
 }

@@ -4,6 +4,7 @@ import DashboardView from '../views/DashboardView.vue'
 import FamilyDetailsComponent from '../components/FamilyDetailsComponent.vue'
 import ClassComponent from '../components/ClassComponent.vue'
 import DocumentViewer from '../components/DocumentViewer.vue'
+import { supabase } from '../services/supabase.js'
 
 const routes = [
   {
@@ -43,15 +44,16 @@ const router = createRouter({
 })
 
 // Navigation guard to check authentication
-router.beforeEach((to, from, next) => {
-  const user = localStorage.getItem('algo_user')
-  const token = localStorage.getItem('algo_token')
-  const isAuthenticated = user && token
-  
+// Uses Supabase session as the single source of truth
+router.beforeEach(async (to, from, next) => {
+  // Check Supabase session (single source of truth for authentication)
+  const { data: { session } } = await supabase.auth.getSession()
+  const isAuthenticated = !!(session && session.user)
+
   // Check if route requires authentication
-  const requiresAuth = to.matched.some(record => record.meta.requiresAuth) || 
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth) ||
                       to.path.startsWith('/dashboard')
-  
+
   if (requiresAuth && !isAuthenticated) {
     // Redirect to login if trying to access protected route without authentication
     next('/login')

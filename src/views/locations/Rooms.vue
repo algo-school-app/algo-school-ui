@@ -728,8 +728,8 @@ const loadRoomTypes = async () => {
     roomTypes.value = await locationService.getRoomTypes()
   } catch (error) {
     console.error('Failed to load room types:', error)
-    // Use fallback values
-    roomTypes.value = locationService.getFallbackRoomTypes()
+    // No fallback - let it fail properly
+    roomTypes.value = []
   } finally {
     loadingRoomTypes.value = false
   }

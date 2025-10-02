@@ -218,13 +218,16 @@ class LocationService {
     }
 
     try {
-      const data = await this.makeRequest('/v1/locations/enums')
+      const response = await this.makeRequest('/v1/locations/enums')
+
+      // Extract the data from the response (API returns {"data": enums})
+      const enumData = response.data || response
 
       // Cache the result
-      LocationService.enumCache = data
+      LocationService.enumCache = enumData
       LocationService.enumCacheTimestamp = now
 
-      return data
+      return enumData
     } catch (error) {
       console.error('Failed to fetch enum values:', error)
 
