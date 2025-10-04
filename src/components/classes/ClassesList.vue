@@ -496,7 +496,7 @@ const loadFilterOptions = async () => {
     availableCourses.value = coursesResponse.data || []
 
     // Load teachers for filter dropdown
-    const teachersResponse = await classService.getTeachers()
+    const teachersResponse = await classService.getEligibleTeachers()
     availableTeachers.value = teachersResponse.data || []
   } catch (err) {
     console.error('Failed to load filter options:', err)

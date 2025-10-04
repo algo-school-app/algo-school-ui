@@ -169,8 +169,9 @@ class ClassService {
    * Remove a teacher from a class
    */
   async removeTeacher(classId, teacherId) {
-    return this.makeRequest(`/v1/classes/${classId}/teachers/${teacherId}`, {
-      method: 'DELETE'
+    return this.makeRequest(`/v1/classes/${classId}/teachers`, {
+      method: 'DELETE',
+      body: JSON.stringify({ person_id: teacherId })
     })
   }
 
@@ -197,9 +198,12 @@ class ClassService {
    * Update student enrollment details
    */
   async updateStudentEnrollment(classId, studentId, enrollmentData) {
-    return this.makeRequest(`/v1/classes/${classId}/students/${studentId}`, {
+    return this.makeRequest(`/v1/classes/${classId}/students`, {
       method: 'PUT',
-      body: JSON.stringify(enrollmentData)
+      body: JSON.stringify({
+        person_id: studentId,
+        ...enrollmentData
+      })
     })
   }
 
@@ -207,39 +211,69 @@ class ClassService {
    * Remove a student from a class
    */
   async unenrollStudent(classId, studentId) {
-    return this.makeRequest(`/v1/classes/${classId}/students/${studentId}`, {
-      method: 'DELETE'
+    return this.makeRequest(`/v1/classes/${classId}/students`, {
+      method: 'DELETE',
+      body: JSON.stringify({ person_id: studentId })
     })
   }
 
   // ==================== HELPER METHODS ====================
 
   /**
-   * Get available courses for class creation
+   * Get available programs (optionally filtered by academic year)
    */
-  async getCourses() {
-    return this.makeRequest('/v1/courses')
+  async getPrograms(academicYearId = null) {
+    const url = academicYearId
+      ? `/v1/programs?academic_year_id=${academicYearId}`
+      : '/v1/programs'
+    return this.makeRequest(url)
   }
 
   /**
-   * Get available rooms for class assignment
+   * Get available courses for class creation
    */
-  async getRooms() {
-    return this.makeRequest('/v1/rooms')
+  async getCourses(params = {}) {
+    const queryParams = new URLSearchParams()
+    Object.keys(params).forEach(key => {
+      if (params[key]) queryParams.append(key, params[key])
+    })
+    const queryString = queryParams.toString()
+    return this.makeRequest(`/v1/courses${queryString ? `?${queryString}` : ''}`)
+  }
+
+  /**
+   * Get all buildings to find available rooms
+   * Note: There's no direct /v1/rooms endpoint, rooms are under buildings
+   */
+  async getBuildings() {
+    return this.makeRequest('/v1/buildings')
+  }
+
+  /**
+   * Get available rooms for a specific building
+   */
+  async getRoomsForBuilding(buildingId) {
+    return this.makeRequest(`/v1/buildings/${buildingId}/rooms`)
   }
 
   /**
    * Get available teachers for assignment
+   * Uses the people endpoint with eligible-teachers filter
    */
-  async getTeachers() {
-    return this.makeRequest('/v1/staff?role=teacher')
+  async getEligibleTeachers() {
+    return this.makeRequest('/v1/people/eligible-teachers')
   }
 
   /**
-   * Get available students for enrollment
+   * Get all people (can be filtered by role)
    */
-  async getStudents() {
-    return this.makeRequest('/v1/students')
+  async getPeople(params = {}) {
+    const queryParams = new URLSearchParams()
+    Object.keys(params).forEach(key => {
+      if (params[key]) queryParams.append(key, params[key])
+    })
+    const queryString = queryParams.toString()
+    return this.makeRequest(`/v1/people${queryString ? `?${queryString}` : ''}`)
   }
 
   // ==================== UTILITY METHODS ====================
