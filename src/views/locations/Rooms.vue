@@ -221,7 +221,7 @@
         <thead class="bg-gray-50 dark:bg-gray-900 sticky top-0">
           <tr>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-              Room Number/Name
+              Room Number (Name)
             </th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
               Description
@@ -250,7 +250,7 @@
           <tr v-for="room in paginatedRooms" :key="room.id" class="hover:bg-gray-50 dark:hover:bg-gray-700">
             <td class="px-6 py-4 whitespace-nowrap">
               <div class="text-sm font-medium text-gray-900 dark:text-white">
-                {{ room.room_name ? `${room.room_number} / ${room.room_name}` : room.room_number }}
+                {{ room.room_name ? `${room.room_number} (${room.room_name})` : room.room_number }}
               </div>
             </td>
             <td class="px-6 py-4 max-w-xs">
@@ -580,6 +580,11 @@ const loadRooms = async () => {
     }
     const response = await locationService.getRooms(selectedBuildingId.value, params)
     rooms.value = response.data || []
+
+    // Debug: Check if description is in the response
+    if (rooms.value.length > 0) {
+      console.log('Room data sample:', rooms.value[0])
+    }
 
     // Calculate stats
     stats.totalRooms = rooms.value.length

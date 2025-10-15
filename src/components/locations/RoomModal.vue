@@ -384,6 +384,9 @@ const handleSubmit = async () => {
       is_active: form.is_active
     }
 
+    // Debug: Log what we're sending
+    console.log('Sending room data:', roomData)
+
     if (isEditing.value) {
       await locationService.updateRoom(props.building.id, props.room.id, roomData)
     } else {
